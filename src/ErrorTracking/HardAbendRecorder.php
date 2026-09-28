@@ -154,10 +154,11 @@ class HardAbendRecorder
                 'exception_class' => get_class($e),
                 'status_code' => $e instanceof HttpExceptionInterface ? $e->getStatusCode() : 500,
                 'message' => Str::limit($e->getMessage(), 2000),
-                'file' => $e->getFile(),
+                // string(255) columns: a long URL (e.g. an OAuth callback's code + state) must not stop the recording
+                'file' => $e->getFile() ? mb_substr($e->getFile(), 0, 255) : null,
                 'line' => $e->getLine(),
                 'trace' => $e->getTraceAsString(),
-                'url' => $request?->fullUrl(),
+                'url' => $request ? mb_substr($request->fullUrl(), 0, 255) : null,
                 'method' => $request?->method(),
                 'user_id' => $request?->user()?->id,
                 'account_id' => $request?->user()?->account_id,
