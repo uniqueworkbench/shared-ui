@@ -72,3 +72,7 @@ infrastructure (currently: hard-abend error tracking) used across all Unique Wor
 - After view/CSS changes, apps may need: php artisan view:clear
 - After backend changes (migrations, config), apps need: composer update
   uniqueworkbench/shared-ui && php artisan migrate
+- **Releasing:** apps require `"*"`, so they get the latest `vX.Y.Z` tag. Bump
+  `"version"` in composer.json to match *before* tagging — Composer ignores a
+  tag whose composer.json version differs. Each app's `push.sh` checks GitHub
+  for the latest tag and updates its composer.lock when there's a newer one.
