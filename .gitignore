@@ -23,5 +23,7 @@ Homestead.json
 Homestead.yaml
 Thumbs.db
 
-# ignore my shell scripts
+# ignore my shell scripts...
 *.sh
+# ...except the release script (it tags vX.Y.Z, which is how apps get new versions)
+!/push.sh
