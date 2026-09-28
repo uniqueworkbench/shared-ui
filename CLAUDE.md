@@ -4,7 +4,28 @@ This package contains shared Blade layouts/components, plus cross-app backend
 infrastructure (currently: hard-abend error tracking) used across all Unique Workbench apps.
 
 ## What lives here
-- `resources/views/layouts/` — app, guest, navigation, public layouts
+- `<x-workbench-layout>` (`resources/views/components/workbench-layout.blade.php`
+  + `resources/views/workbench/`) — the app shell every Unique Workbench app
+  uses (the account app via its `layouts/app.blade.php` override, client apps
+  directly). Two layouts, picked by `config('shared-ui.layout')`:
+  - **desktop** — left sidebar (menu, Return to Portal, version at the very
+    bottom) with a top bar (page title, user menu). Below `lg` it becomes a
+    simple header with a hamburger; the sidebar turns into a drawer that also
+    holds the user, their links and Log Out.
+  - **phone** — app-style header (hamburger + centred title); the drawer holds
+    the user, menu, their links, Log Out and the version. Content is `max-w-lg`.
+  - Configured per app in its `config/shared-ui.php`: `navigation` (label,
+    route, icon, optional `active`/`except` routeIs() patterns, `can` gate,
+    `badge` `[Class::class, 'staticMethod']` count), `user_menu` (extra user
+    links), `portal_url` (null hides Return to Portal). No closures — apps
+    cache config on deploy. Items with unknown routes are skipped.
+  - Slots `header`, `breadcrumb`; props `title`, `padded` (false = pages bring
+    their own spacing); `@push('banners')` renders under the header. The
+    LOCAL/BUILD/BETA badge shows next to the app name outside production, and
+    an empty `#main-nav-filler` sits in the header for native app wrappers
+    whose JS sizes it to the status bar.
+- `resources/views/layouts/` — app, guest, navigation, public layouts (the
+  original top-nav shell; kept for apps that haven't moved to the workbench layout)
 - `resources/views/components/` — all shared Blade components
 - `resources/css/app.css` — base styles, FontAwesome, table utilities
 - `tailwind.config.js` — shared color palette and fonts (no imports — apps handle those)
