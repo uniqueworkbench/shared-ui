@@ -27,6 +27,9 @@ return [
     |              except (routeIs() patterns), can (a gate ability) and badge
     |              ([Class::class, 'staticMethod'] returning a count). Items whose
     |              route doesn't exist are skipped. No closures — config is cached.
+    |              A group (label, icon, optional can, children: [items], no route)
+    |              is a header that expands to its children; it starts open while
+    |              a child is active and is hidden when no child is visible.
     | user_menu:   extra links in the user menu (label, route, icon), above
     |              Return to Portal and Log Out.
     | portal_url:  where "Return to Portal" goes — the Unique Workbench account

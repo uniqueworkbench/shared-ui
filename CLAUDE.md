@@ -16,7 +16,9 @@ infrastructure (currently: hard-abend error tracking) used across all Unique Wor
     the user, menu, their links, Log Out and the version. Content is `max-w-lg`.
   - Configured per app in its `config/shared-ui.php`: `navigation` (label,
     route, icon, optional `active`/`except` routeIs() patterns, `can` gate,
-    `badge` `[Class::class, 'staticMethod']` count), `user_menu` (extra user
+    `badge` `[Class::class, 'staticMethod']` count; an item with `children`
+    and no route is a collapsible group header, open while a child is active),
+    `user_menu` (extra user
     links), `portal_url` (null hides Return to Portal). No closures — apps
     cache config on deploy. Items with unknown routes are skipped.
   - Slots `header`, `breadcrumb`; props `title`, `padded` (false = pages bring
