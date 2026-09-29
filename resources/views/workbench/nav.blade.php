@@ -37,13 +37,14 @@
                 <i class="fa-solid fa-chevron-down text-xs transition-transform" :class="open && 'rotate-180'"></i>
             </button>
             <div x-show="open" @unless ($open) x-cloak @endunless class="mt-1 space-y-1">
-                @foreach ($children as $child)
-                    @include('shared-ui::workbench.nav-item', ['item' => $child, 'child' => true])
+                @foreach ($children as $childItem)
+                    @include('shared-ui::workbench.nav-item', ['item' => $childItem, 'child' => true])
                 @endforeach
             </div>
         </div>
     @else
         @continue(! $linkable($item))
-        @include('shared-ui::workbench.nav-item', ['item' => $item])
+        {{-- child passed explicitly: @include inherits this view's variables --}}
+        @include('shared-ui::workbench.nav-item', ['item' => $item, 'child' => false])
     @endif
 @endforeach
