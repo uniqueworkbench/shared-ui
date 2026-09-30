@@ -17,6 +17,20 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Feature API Key
+    |--------------------------------------------------------------------------
+    |
+    | The key the account app sends (X-Api-Key) when its App Features pages
+    | read this app's data — routes behind the `feature-api` middleware.
+    | New App Setup writes it to each environment's .env and to the app's
+    | Application (Admin → Applications → Feature API Key). Unset = refused.
+    |
+    */
+
+    'feature_api_key' => env('FEATURE_API_KEY'),
+
+    /*
+    |--------------------------------------------------------------------------
     | Client App Layout (<x-workbench-layout>)
     |--------------------------------------------------------------------------
     |

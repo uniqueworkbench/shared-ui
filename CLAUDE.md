@@ -1,7 +1,7 @@
 # Shared UI Package
 
 This package contains shared Blade layouts/components, plus cross-app backend
-infrastructure (currently: hard-abend error tracking) used across all Unique Workbench apps.
+infrastructure (hard-abend error tracking, the Feature API key check) used across all Unique Workbench apps.
 
 ## What lives here
 - `<x-workbench-layout>` (`resources/views/components/workbench-layout.blade.php`
@@ -66,6 +66,14 @@ infrastructure (currently: hard-abend error tracking) used across all Unique Wor
     dependency — self-contained inline CSS so it still renders even if the
     app's asset build is broken) plus thin `404.blade.php`, `403.blade.php`,
     `hard-abend.blade.php` wrappers.
+- `src/FeatureApi/VerifyFeatureApiKey.php` — route middleware alias
+  `feature-api`, for an app's **Feature API**: the endpoints the account app's
+  App Features pages read the app's data from, server to server. Requires
+  `X-Api-Key` to equal `config('shared-ui.feature_api_key')` (`FEATURE_API_KEY`
+  in the app's .env; New App Setup writes it, and stores the same value as the
+  app's Feature API Key in the account app). No key set = every request gets
+  a JSON 401. The key lives in the package's config, so apps that publish
+  their own `config/shared-ui.php` still get it (Laravel merges top-level keys).
 
 ## Rules
 - No app-*specific* logic here — logic must be generic enough to apply to every

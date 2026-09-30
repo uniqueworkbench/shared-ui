@@ -4,6 +4,7 @@ namespace UniqueWorkbench\SharedUi;
 
 use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\ServiceProvider;
+use UniqueWorkbench\SharedUi\FeatureApi\VerifyFeatureApiKey;
 
 class SharedUiServiceProvider extends ServiceProvider
 {
@@ -23,6 +24,9 @@ class SharedUiServiceProvider extends ServiceProvider
         $this->loadMigrationsFrom(__DIR__ . '/../database/migrations');
 
         Blade::anonymousComponentPath(__DIR__ . '/../resources/views/components');
+
+        // Guards routes the account app's App Features read (X-Api-Key = FEATURE_API_KEY)
+        $this->app['router']->aliasMiddleware('feature-api', VerifyFeatureApiKey::class);
 
         $this->publishes([
             __DIR__ . '/../resources/views' => resource_path('views/vendor/shared-ui'),
