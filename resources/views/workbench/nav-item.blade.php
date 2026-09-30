@@ -1,9 +1,10 @@
-{{-- One menu link (see nav.blade.php). $item: label, route, icon, active, except, badge. $child: indented under a group. --}}
+{{-- One menu link (see nav.blade.php). $item: label, route, icon, active, except, badge. $child: indented under a group.
+     $badgeCount: the badge already counted (by the group), or null to count it here. --}}
 @php
     $child = $child ?? false;
     $active = request()->routeIs(...(array) ($item['active'] ?? $item['route']))
         && ! (isset($item['except']) && request()->routeIs(...(array) $item['except']));
-    $badge = isset($item['badge']) && is_callable($item['badge']) ? (int) call_user_func($item['badge']) : 0;
+    $badge = $badgeCount ?? (isset($item['badge']) && is_callable($item['badge']) ? (int) call_user_func($item['badge']) : 0);
 @endphp
 <a href="{{ route($item['route']) }}"
    @if ($active) aria-current="page" @endif

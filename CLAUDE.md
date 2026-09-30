@@ -17,7 +17,8 @@ infrastructure (currently: hard-abend error tracking) used across all Unique Wor
   - Configured per app in its `config/shared-ui.php`: `navigation` (label,
     route, icon, optional `active`/`except` routeIs() patterns, `can` gate,
     `badge` `[Class::class, 'staticMethod']` count; an item with `children`
-    and no route is a collapsible group header, open while a child is active),
+    and no route is a collapsible group header, open while a child is active;
+    while collapsed it shows its children's badges added up, expanded each child shows its own),
     `user_menu` (extra user
     links), `portal_url` (null hides Return to Portal). No closures — apps
     cache config on deploy. Items with unknown routes are skipped.

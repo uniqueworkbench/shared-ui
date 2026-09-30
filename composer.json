@@ -2,7 +2,7 @@
     "name": "uniqueworkbench/shared-ui",
     "description": "Shared UI components and layouts for Unique Workbench apps",
     "type": "library",
-    "version": "1.1.4",
+    "version": "1.1.5",
     "autoload": {
         "psr-4": {
             "UniqueWorkbench\\SharedUi\\": "src/"

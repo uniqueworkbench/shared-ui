@@ -9,13 +9,16 @@
 
     A group is an item with children (label, icon, optional can, children: items as above,
     no route). It shows as a header that expands to its children — open by default while
-    one of them is active — and is hidden when none of its children are visible.
+    one of them is active — and is hidden when none of its children are visible. While
+    collapsed, the header shows its children's badges added up; expanded, each child shows its own.
 --}}
 @php
     $visible = fn (array $item) => ! (isset($item['can']) && \Illuminate\Support\Facades\Gate::denies($item['can']));
     $linkable = fn (array $item) => isset($item['route']) && \Illuminate\Support\Facades\Route::has($item['route']) && $visible($item);
     $isActive = fn (array $item) => request()->routeIs(...(array) ($item['active'] ?? $item['route']))
         && ! (isset($item['except']) && request()->routeIs(...(array) $item['except']));
+    $badgeOf = fn (array $item) => isset($item['badge']) && is_callable($item['badge']) ? (int) call_user_func($item['badge']) : 0;
+    $pill = 'inline-flex items-center justify-center min-w-[1.25rem] px-1.5 py-0.5 rounded-full text-xs font-semibold leading-none bg-blue-500 text-white';
 @endphp
 @foreach (config('shared-ui.navigation', []) as $item)
     @if (isset($item['children']))
@@ -23,6 +26,8 @@
         @php
             $children = array_values(array_filter($item['children'], $linkable));
             $open = collect($children)->contains($isActive);
+            $childBadges = array_map($badgeOf, $children);
+            $groupBadge = array_sum($childBadges);
         @endphp
         @continue(empty($children))
         <div x-data="{ open: @js($open) }">
@@ -34,17 +39,21 @@
                     ])>
                 <i class="{{ $item['icon'] ?? 'fa-solid fa-folder' }} w-5 text-center"></i>
                 <span class="flex-1 truncate text-left">{{ __($item['label']) }}</span>
+                @if ($groupBadge > 0)
+                    {{-- Collapsed only: expanded, the children show their own --}}
+                    <span x-show="! open" @if ($open) x-cloak @endif data-group-badge class="{{ $pill }}">{{ $groupBadge > 99 ? '99+' : $groupBadge }}</span>
+                @endif
                 <i class="fa-solid fa-chevron-down text-xs transition-transform" :class="open && 'rotate-180'"></i>
             </button>
             <div x-show="open" @unless ($open) x-cloak @endunless class="mt-1 space-y-1">
-                @foreach ($children as $childItem)
-                    @include('shared-ui::workbench.nav-item', ['item' => $childItem, 'child' => true])
+                @foreach ($children as $i => $childItem)
+                    @include('shared-ui::workbench.nav-item', ['item' => $childItem, 'child' => true, 'badgeCount' => $childBadges[$i]])
                 @endforeach
             </div>
         </div>
     @else
         @continue(! $linkable($item))
         {{-- child passed explicitly: @include inherits this view's variables --}}
-        @include('shared-ui::workbench.nav-item', ['item' => $item, 'child' => false])
+        @include('shared-ui::workbench.nav-item', ['item' => $item, 'child' => false, 'badgeCount' => null])
     @endif
 @endforeach
