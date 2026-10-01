@@ -4,13 +4,23 @@ namespace UniqueWorkbench\SharedUi;
 
 use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\ServiceProvider;
+use Illuminate\Support\Facades\Gate;
 use UniqueWorkbench\SharedUi\FeatureApi\VerifyFeatureApiKey;
+use UniqueWorkbench\SharedUi\Workbench\Directory;
+use UniqueWorkbench\SharedUi\Workbench\DirectoryChangedController;
+use UniqueWorkbench\SharedUi\Workbench\EnsureWorkbenchContext;
+use UniqueWorkbench\SharedUi\Workbench\Workbench;
 
 class SharedUiServiceProvider extends ServiceProvider
 {
     public function register(): void
     {
         $this->mergeConfigFrom(__DIR__ . '/../config/shared-ui.php', 'shared-ui');
+
+        // Client apps' organization context (workbench()) and the account app's shared directory
+        require_once __DIR__ . '/Workbench/helpers.php';
+        $this->app->scoped(Workbench::class, fn ($app) => new Workbench($app['session.store']));
+        $this->app->singleton(Directory::class);
     }
 
     public function boot(): void
@@ -34,6 +44,25 @@ class SharedUiServiceProvider extends ServiceProvider
 
         // Guards routes the account app's App Features read (X-Api-Key = FEATURE_API_KEY)
         $this->app['router']->aliasMiddleware('feature-api', VerifyFeatureApiKey::class);
+        // Signed-in pages get the organization context, or go back through SSO (client apps add it to `web`)
+        $this->app['router']->aliasMiddleware('workbench', EnsureWorkbenchContext::class);
+
+        // Client apps built on the workbench (they have a config/workbench.php manifest)
+        if (config()->has('workbench.audiences')) {
+            // A gate per app permission, e.g. @can('schedule.publish')
+            foreach (array_keys(config('workbench.permissions', [])) as $permission) {
+                Gate::define($permission, fn () => workbench()->can($permission));
+            }
+
+            // The account app says an organization's shared directory changed: drop the cached copies
+            $this->app->booted(function () {
+                if (! $this->app->routesAreCached()) {
+                    $this->app['router']->middleware(['api', 'feature-api', 'throttle:120,1'])
+                        ->post('/api/features/directory-changed', DirectoryChangedController::class)
+                        ->name('features.directory-changed');
+                }
+            });
+        }
 
         $this->publishes([
             __DIR__ . '/../resources/views' => resource_path('views/vendor/shared-ui'),

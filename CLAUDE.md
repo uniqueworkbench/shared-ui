@@ -98,6 +98,24 @@ infrastructure (hard-abend error tracking, the Feature API key check) used acros
   a JSON 401. The key lives in the package's config, so apps that publish
   their own `config/shared-ui.php` still get it (Laravel merges top-level keys).
 
+- `src/Workbench/` — what client apps are built on (the template uses all of it;
+  existing apps can adopt it piece by piece). The account app (the portal) doesn't use it.
+  - `Workbench` (`workbench()` helper, a scoped binding): the signed-in user's
+    organization context, kept in the session from the account app's `/api/user`
+    at SSO sign-in (`Workbench::fromSsoUser`): organization, role, relationship,
+    positions, units, visible locations, permissions (`can()`), app settings.
+  - `EnsureWorkbenchContext` (alias `workbench`; apps append it to `web`): a
+    signed-in session without a context goes back through SSO.
+  - `Concerns\BelongsToOrganization` / `Concerns\ScopedToLocations`: model traits
+    that fill in and filter `organization_id`, and limit location data to the
+    locations the user may see.
+  - `Directory`: the account app's `/api/customers|vendors|locations|members`,
+    with a cached client-credentials token (needs the app's `config/sso.php`).
+  - `OrganizationMenu::current` for `shared-ui.organization`.
+  - For apps with a `config/workbench.php` manifest: a gate per key in its
+    `permissions`, and `POST /api/features/directory-changed` (feature-api) to
+    flush the directory cache when the account app says something changed.
+
 ## Rules
 - No app-*specific* logic here — logic must be generic enough to apply to every
   consuming app (not "how account.uniqueworkbench.com handles X")
