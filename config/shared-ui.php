@@ -63,4 +63,20 @@ return [
 
     'portal_url' => env('SSO_URL', 'https://account.uniqueworkbench.com'),
 
+    /*
+    | The top bar and the bottom of the menu (all optional; null hides them):
+    |
+    | organization:  [Class::class, 'staticMethod'] returning null or
+    |                ['name' => …, 'switch_url' => …, 'links' => [['label', 'url', 'icon'], …]]
+    |                — the organization the user is working in, with Switch Organization.
+    | notifications: ['count' => [Class::class, 'staticMethod'], 'route' => route name] — the bell.
+    | help:          ['label' => 'Help & Support', 'route' => route name] (or 'url' => …), optional 'can' gate.
+    */
+
+    'organization' => null,
+
+    'notifications' => null,
+
+    'help' => null,
+
 ];

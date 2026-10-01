@@ -1,23 +1,26 @@
 /** @type {import('tailwindcss').Config} */
+// The Unique Workbench look, shared by every app (apps spread this into their own tailwind.config.js).
+// bt_primary is the brand red: buttons, links, the active menu item, focus rings.
+// The chrome (top bar, sidebar) is zinc-900 with white text; pages sit on zinc-100 in white bordered cards.
 export default {
     theme: {
         extend: {
             fontFamily: {
-                sans: ['Figtree', 'ui-sans-serif', 'system-ui', 'sans-serif'],
+                sans: ['Inter', 'ui-sans-serif', 'system-ui', 'sans-serif'],
             },
             colors: {
                 bt_primary: {
-                    DEFAULT: '#0d6efd',
-                    50: '#e7f1ff',
-                    100: '#d0e2ff',
-                    200: '#a6c9ff',
-                    300: '#7aadff',
-                    400: '#4d91ff',
-                    500: '#0d6efd',
-                    600: '#0b5ed7',
-                    700: '#084298',
-                    800: '#052c65',
-                    900: '#031633',
+                    DEFAULT: '#D03A3A',
+                    50: '#FDF4F4',
+                    100: '#FBE6E6',
+                    200: '#F5CCCC',
+                    300: '#EDA5A5',
+                    400: '#E07272',
+                    500: '#D64C4C',
+                    600: '#D03A3A',
+                    700: '#AE2E2E',
+                    800: '#8F2929',
+                    900: '#772727',
                 },
             },
         },

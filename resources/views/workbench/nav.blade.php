@@ -18,7 +18,7 @@
     $isActive = fn (array $item) => request()->routeIs(...(array) ($item['active'] ?? $item['route']))
         && ! (isset($item['except']) && request()->routeIs(...(array) $item['except']));
     $badgeOf = fn (array $item) => isset($item['badge']) && is_callable($item['badge']) ? (int) call_user_func($item['badge']) : 0;
-    $pill = 'inline-flex items-center justify-center min-w-[1.25rem] px-1.5 py-0.5 rounded-full text-xs font-semibold leading-none bg-blue-500 text-white';
+    $pill = 'inline-flex items-center justify-center min-w-[1.25rem] px-1.5 py-0.5 rounded-full text-xs font-semibold leading-none bg-bt_primary-600 text-white';
 @endphp
 @foreach (config('shared-ui.navigation', []) as $item)
     @if (isset($item['children']))
@@ -33,17 +33,17 @@
         <div x-data="{ open: @js($open) }">
             <button type="button" @click="open = ! open" :aria-expanded="open.toString()"
                     @class([
-                        'w-full flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium transition',
-                        'text-bt_primary-700' => $open,
-                        'text-gray-600 hover:bg-gray-100 hover:text-gray-900' => ! $open,
+                        'w-full flex items-center gap-4 px-4 py-3 rounded-md text-base font-medium transition hover:bg-white/5',
+                        'text-white' => $open,
+                        'text-zinc-200 hover:text-white' => ! $open,
                     ])>
-                <i class="{{ $item['icon'] ?? 'fa-solid fa-folder' }} w-5 text-center"></i>
+                <i class="{{ $item['icon'] ?? 'fa-solid fa-folder' }} w-5 text-center text-lg"></i>
                 <span class="flex-1 truncate text-left">{{ __($item['label']) }}</span>
                 @if ($groupBadge > 0)
                     {{-- Collapsed only: expanded, the children show their own --}}
                     <span x-show="! open" @if ($open) x-cloak @endif data-group-badge class="{{ $pill }}">{{ $groupBadge > 99 ? '99+' : $groupBadge }}</span>
                 @endif
-                <i class="fa-solid fa-chevron-down text-xs transition-transform" :class="open && 'rotate-180'"></i>
+                <i class="fa-solid text-xs {{ $open ? 'fa-chevron-up' : 'fa-chevron-down' }}" :class="open ? 'fa-chevron-up' : 'fa-chevron-down'"></i>
             </button>
             <div x-show="open" @unless ($open) x-cloak @endunless class="mt-1 space-y-1">
                 @foreach ($children as $i => $childItem)

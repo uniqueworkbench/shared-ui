@@ -25,6 +25,13 @@ class SharedUiServiceProvider extends ServiceProvider
 
         Blade::anonymousComponentPath(__DIR__ . '/../resources/views/components');
 
+        // The UI kit (the standard look, built from the shared components), outside production
+        $this->app->booted(function () {
+            if (! $this->app->environment('production') && ! $this->app->routesAreCached()) {
+                $this->app['router']->middleware(['web', 'auth'])->get('/ui-kit', fn () => view('shared-ui::ui-kit'))->name('shared-ui.ui-kit');
+            }
+        });
+
         // Guards routes the account app's App Features read (X-Api-Key = FEATURE_API_KEY)
         $this->app['router']->aliasMiddleware('feature-api', VerifyFeatureApiKey::class);
 

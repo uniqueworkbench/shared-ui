@@ -10,21 +10,23 @@
 
         <!-- Fonts -->
         <link rel="preconnect" href="https://fonts.bunny.net">
-        <link href="https://fonts.bunny.net/css?family=figtree:400,500,600&display=swap" rel="stylesheet" />        
+        <link href="https://fonts.bunny.net/css?family=inter:400,500,600,700&display=swap" rel="stylesheet" />        
 
         <!-- Scripts -->
         @vite(['resources/css/app.css', 'resources/js/app.js'])
     </head>
-    <body class="font-sans text-gray-900 antialiased bg-gray-100">
+    <body class="font-sans text-zinc-900 antialiased bg-zinc-100">
         <main class="pb-12">
-            <div class="min-h-screen flex flex-col sm:justify-center items-center pt-6 sm:pt-0 bg-gray-100">
-                <div>
-                    <a href="/">
-                        <x-application-logo class="w-100 h-10 fill-current text-gray-500" />
-                    </a>
-                </div>
+            <div class="min-h-screen flex flex-col sm:justify-center items-center pt-10 sm:pt-0 px-4">
+                <a href="/" class="flex items-center gap-3 text-zinc-900">
+                    @include('shared-ui::workbench.logo', ['class' => 'h-11 w-11'])
+                    <span class="leading-none">
+                        <span class="block text-xl font-bold tracking-[0.08em]">UNIQUE</span>
+                        <span class="block text-sm font-medium tracking-[0.2em] text-zinc-600">WORKBENCH</span>
+                    </span>
+                </a>
 
-                <div class="w-full sm:max-w-md mt-6 px-6 py-4 bg-white shadow-md overflow-hidden sm:rounded-lg">
+                <div class="w-full sm:max-w-md mt-8 px-6 py-6 bg-white border border-zinc-200 rounded-md">
                     {{ $slot }}
                 </div>
             </div>

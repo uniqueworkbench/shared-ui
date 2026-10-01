@@ -8,13 +8,16 @@ infrastructure (hard-abend error tracking, the Feature API key check) used acros
   + `resources/views/workbench/`) — the app shell every Unique Workbench app
   uses (the account app via its `layouts/app.blade.php` override, client apps
   directly). Two layouts, picked by `config('shared-ui.layout')`:
-  - **desktop** — left sidebar (menu, Return to Portal, version at the very
-    bottom) with a top bar (page title, user menu). Below `lg` it becomes a
-    simple header with a hamburger; the sidebar turns into a drawer that also
-    holds the user, their links and Log Out.
-  - **phone** — app-style header (hamburger + centred title); the drawer holds
-    the user, menu, their links, Log Out and the version. Content is `max-w-lg`.
-  - Configured per app in its `config/shared-ui.php`: `navigation` (label,
+  - **desktop** — a dark top bar (logo, organization, bell, user menu) over a dark
+    left sidebar (menu, Help & Support, Return to Portal, version at the very
+    bottom); the page title (`header`) heads the content. Below `lg` the sidebar
+    turns into a drawer (hamburger in the top bar) that also holds the user,
+    their links and Log Out.
+  - **phone** — dark app-style header (hamburger + centred title + bell); the
+    drawer holds the user, organization, menu, their links, Log Out and the
+    version. Content is `max-w-lg`.
+  - Configured per app in its `config/shared-ui.php` (also `organization`, `notifications`,
+    `help` — see the package config): `navigation` (label,
     route, icon, optional `active`/`except` routeIs() patterns, `can` gate,
     `badge` `[Class::class, 'staticMethod']` count; an item with `children`
     and no route is a collapsible group header, open while a child is active;
@@ -24,9 +27,29 @@ infrastructure (hard-abend error tracking, the Feature API key check) used acros
     cache config on deploy. Items with unknown routes are skipped.
   - Slots `header`, `breadcrumb`; props `title`, `padded` (false = pages bring
     their own spacing); `@push('banners')` renders under the header. The
-    LOCAL/BUILD/BETA badge shows next to the app name outside production, and
+    LOCAL/BUILD/BETA badge shows next to the wordmark outside production, and
     an empty `#main-nav-filler` sits in the header for native app wrappers
     whose JS sizes it to the status bar.
+- **The Unique Workbench look** (every app, set here — never restyle it per app):
+  - Chrome: a dark (`zinc-900`) top bar across the page — logo + UNIQUE WORKBENCH wordmark,
+    the organization the user is working in with Switch Organization (`organization`), the
+    notification bell (`notifications`), the user's red initials avatar and menu — over a dark
+    sidebar: menu items in white, the active one filled brand red; a client app's name heads its
+    menu; Help & Support (`help`), Return to Portal and the version at the bottom;
+    `@push('sidebar')` adds a note under the menu. Pages sit on a light `zinc-100` canvas; the
+    `header` slot is the page title (3xl bold).
+  - Colour: `bt_primary` is the brand red (`#D03A3A` at 600) — primary buttons, links, the active
+    menu item, focus rings, pills. Neutrals are Tailwind `zinc`. Font: Inter.
+  - Page patterns, as components (see `/ui-kit`, registered outside production, which rebuilds
+    the reference design from them): `x-callout` (pale red page intro: icon circle, title, text,
+    link), `x-page-header` (2xl bold section title, description, `actions` slot for a search or
+    buttons), `x-card` (white, thin `zinc-200` border, `rounded-md`; optional title/description/
+    `aside`; `:padded="false"` for edge-to-edge tables), `x-icon-circle` (tinted circle: gray, red,
+    green, purple, orange, amber, teal, blue), `x-list-group` + `x-list-row` (bordered rows: icon,
+    title, subtitle, chevron; `bordered` for a stack of item cards; `leading`/`actions` slots),
+    `x-pill`, `x-info-box`, and buttons: `x-primary-button` (filled red), `x-outline-button` (red
+    outline, `href` makes it a link), `x-secondary-button` (white, grey border), `x-danger-button`
+    (dark red). Buttons are sentence case, `text-sm font-semibold`, never uppercase.
 - `resources/views/layouts/` — app, guest, navigation, public layouts (the
   original top-nav shell; kept for apps that haven't moved to the workbench layout)
 - `resources/views/components/` — all shared Blade components

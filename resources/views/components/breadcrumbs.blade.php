@@ -16,7 +16,7 @@
         <li class="inline-flex items-center">
             <a href="{{ route('dashboard') }}"
                @if($immediateParentIndex === -1) onclick="{{ $backOnClick }}" @endif
-               class="text-base text-gray-700 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white">
+               class="text-sm font-medium text-zinc-600 hover:text-bt_primary-600">
                 Home
             </a>
         </li>
@@ -29,11 +29,11 @@
                     @if(isset($breadcrumb['url']))
                         <a href="{{ $breadcrumb['url'] }}"
                            @if($index === $immediateParentIndex) onclick="{{ $backOnClick }}" @endif
-                           class="text-base text-gray-700 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white">
+                           class="text-sm font-medium text-zinc-600 hover:text-bt_primary-600">
                             {{ $breadcrumb['label'] }}
                         </a>
                     @else
-                        <span class="text-base text-gray-500 dark:text-gray-400">{{ $breadcrumb['label'] }}</span>
+                        <span class="text-sm font-medium text-zinc-900">{{ $breadcrumb['label'] }}</span>
                     @endif
                 </div>
             </li>
