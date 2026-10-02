@@ -33,11 +33,11 @@
         <div x-data="{ open: @js($open) }">
             <button type="button" @click="open = ! open" :aria-expanded="open.toString()"
                     @class([
-                        'w-full flex items-center gap-4 px-4 py-3 rounded-md text-base font-medium transition hover:bg-white/5',
+                        'w-full flex items-center gap-3 px-3 py-2 rounded-md text-[0.8rem] font-medium transition hover:bg-white/5',
                         'text-white' => $open,
                         'text-zinc-200 hover:text-white' => ! $open,
                     ])>
-                <i class="{{ $item['icon'] ?? 'fa-solid fa-folder' }} w-5 text-center text-lg"></i>
+                <i class="{{ $item['icon'] ?? 'fa-solid fa-folder' }} w-4 text-center text-[0.9rem]"></i>
                 <span class="flex-1 truncate text-left">{{ __($item['label']) }}</span>
                 @if ($groupBadge > 0)
                     {{-- Collapsed only: expanded, the children show their own --}}

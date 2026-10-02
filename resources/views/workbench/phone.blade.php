@@ -24,7 +24,7 @@
            class="fixed inset-y-0 left-0 z-50 w-72 max-w-[85%] bg-zinc-900 text-white shadow-xl flex flex-col"
            style="padding-top: env(safe-area-inset-top); padding-bottom: env(safe-area-inset-bottom)">
         <div class="flex items-center justify-between gap-3 px-5 h-16 shrink-0 border-b border-white/10">
-            @include('shared-ui::workbench.brand')
+            @include('shared-ui::workbench.brand', ['logoClass' => 'h-10'])
             <button type="button" @click="drawer = false" class="p-2 text-zinc-300 hover:text-white" aria-label="{{ __('Close menu') }}">
                 <i class="fa-solid fa-xmark"></i>
             </button>
@@ -33,15 +33,15 @@
         @include('shared-ui::workbench.user-card')
         <div class="px-3 py-2 border-b border-white/10 empty:hidden">@include('shared-ui::workbench.organization')</div>
 
-        <nav class="flex-1 overflow-y-auto px-4 py-4 space-y-1.5">
+        <nav class="flex-1 overflow-y-auto px-3 py-4 space-y-1">
             @if (config('shared-ui.portal_url'))
-                <p class="px-4 pb-2 text-xs font-semibold uppercase tracking-wider text-zinc-400">{{ config('app.name') }}</p>
+                <p class="px-3 pb-2 text-xs font-semibold uppercase tracking-wider text-zinc-400">{{ config('app.name') }}</p>
             @endif
             @include('shared-ui::workbench.nav')
             @stack('sidebar')
         </nav>
 
-        <div class="shrink-0 px-4 pt-3 pb-4 border-t border-white/10 space-y-1">
+        <div class="shrink-0 px-3 pt-3 pb-4 border-t border-white/10 space-y-1">
             @include('shared-ui::workbench.help-link')
             @auth
                 @include('shared-ui::workbench.user-links', ['style' => 'list'])

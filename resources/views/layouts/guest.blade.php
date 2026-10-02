@@ -18,12 +18,8 @@
     <body class="font-sans text-zinc-900 antialiased bg-zinc-100">
         <main class="pb-12">
             <div class="min-h-screen flex flex-col sm:justify-center items-center pt-10 sm:pt-0 px-4">
-                <a href="/" class="flex items-center gap-3 text-zinc-900">
-                    @include('shared-ui::workbench.logo', ['class' => 'h-11 w-11'])
-                    <span class="leading-none">
-                        <span class="block text-xl font-bold tracking-[0.08em]">UNIQUE</span>
-                        <span class="block text-sm font-medium tracking-[0.2em] text-zinc-600">WORKBENCH</span>
-                    </span>
+                <a href="/">
+                    <img src="{{ \UniqueWorkbench\SharedUi\Brand::logo('light') }}" alt="Unique Workbench" class="h-20 w-auto">
                 </a>
 
                 <div class="w-full sm:max-w-md mt-8 px-6 py-6 bg-white border border-zinc-200 rounded-md">

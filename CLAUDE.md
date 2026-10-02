@@ -31,7 +31,10 @@ infrastructure (hard-abend error tracking, the Feature API key check) used acros
     an empty `#main-nav-filler` sits in the header for native app wrappers
     whose JS sizes it to the status bar.
 - **The Unique Workbench look** (every app, set here — never restyle it per app):
-  - Chrome: a dark (`zinc-900`) top bar across the page — logo + UNIQUE WORKBENCH wordmark,
+  - Logo: `resources/images/logo-dark.png` (white "unique", for the dark chrome) and
+    `logo-light.png` (black "unique", the guest/login page), inlined as data URIs by
+    `UniqueWorkbench\SharedUi\Brand::logo('dark'|'light')` so apps publish nothing.
+  - Chrome: a dark (`zinc-900`) top bar across the page — the logo (`brand`),
     the organization the user is working in with Switch Organization (`organization`), the
     notification bell (`notifications`), the user's red initials avatar and menu — over a dark
     sidebar: menu items in white, the active one filled brand red; a client app's name heads its
@@ -40,6 +43,9 @@ infrastructure (hard-abend error tracking, the Feature API key check) used acros
     `header` slot is the page title (3xl bold).
   - Colour: `bt_primary` is the brand red (`#D03A3A` at 600) — primary buttons, links, the active
     menu item, focus rings, pills. Neutrals are Tailwind `zinc`. Font: Inter.
+  - Type is a step smaller than Tailwind's defaults (`tailwind.config.js`: `text-base` and
+    unsized text 15px, the rest of the scale to match); the sidebar menu is smaller still
+    (0.8rem items, 0.76rem group children) in a `w-60` sidebar under a `h-16` top bar.
   - Page patterns, as components (see `/ui-kit`, registered outside production, which rebuilds
     the reference design from them): `x-callout` (pale red page intro: icon circle, title, text,
     link), `x-page-header` (2xl bold section title, description, `actions` slot for a search or
@@ -54,7 +60,8 @@ infrastructure (hard-abend error tracking, the Feature API key check) used acros
   original top-nav shell; kept for apps that haven't moved to the workbench layout)
 - `resources/views/components/` — all shared Blade components
 - `resources/css/app.css` — base styles, FontAwesome, table utilities
-- `tailwind.config.js` — shared color palette and fonts (no imports — apps handle those)
+- `tailwind.config.js` — shared color palette, fonts and type scale (no imports — apps handle
+  those); apps spread `sharedConfig.plugins` into their own `plugins` (it sizes unsized text)
 - `src/ErrorTracking/` — captures uncaught exceptions to an `error_logs` table,
   emails an alert, and renders formatted error pages (with a back button) for
   500/403/404. `HardAbendRecorder::register($exceptions)` is called from each

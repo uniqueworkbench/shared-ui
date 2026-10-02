@@ -11,8 +11,8 @@
             <i class="{{ $link['icon'] ?? 'fa-solid fa-circle' }} w-4 mr-2 text-center"></i>{{ __($link['label']) }}
         </x-dropdown-link>
     @else
-        <a href="{{ route($link['route']) }}" class="flex items-center gap-4 px-4 py-3 rounded-md text-base font-medium text-zinc-200 hover:bg-white/5 hover:text-white">
-            <i class="{{ $link['icon'] ?? 'fa-solid fa-circle' }} w-5 text-center text-lg"></i>{{ __($link['label']) }}
+        <a href="{{ route($link['route']) }}" class="flex items-center gap-3 px-3 py-2 rounded-md text-[0.8rem] font-medium text-zinc-200 hover:bg-white/5 hover:text-white">
+            <i class="{{ $link['icon'] ?? 'fa-solid fa-circle' }} w-4 text-center text-[0.9rem]"></i>{{ __($link['label']) }}
         </a>
     @endif
 @endforeach
@@ -34,8 +34,8 @@
             <i class="fa-solid fa-right-from-bracket w-4 mr-2 text-center"></i>{{ __('Log Out') }}
         </x-dropdown-link>
     @else
-        <button type="submit" class="w-full flex items-center gap-4 px-4 py-3 rounded-md text-base font-medium text-zinc-200 hover:bg-white/5 hover:text-white">
-            <i class="fa-solid fa-right-from-bracket w-5 text-center text-lg"></i>{{ __('Log Out') }}
+        <button type="submit" class="w-full flex items-center gap-3 px-3 py-2 rounded-md text-[0.8rem] font-medium text-zinc-200 hover:bg-white/5 hover:text-white">
+            <i class="fa-solid fa-right-from-bracket w-4 text-center text-[0.9rem]"></i>{{ __('Log Out') }}
         </button>
     @endif
 </form>

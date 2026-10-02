@@ -9,14 +9,14 @@
 <a href="{{ route($item['route']) }}"
    @if ($active) aria-current="page" @endif
    @class([
-       'flex items-center gap-4 px-4 rounded-md font-medium transition',
-       'py-3 text-base' => ! $child,
-       'py-2.5 text-[0.95rem] pl-[3.25rem]' => $child,
+       'flex items-center gap-3 px-3 rounded-md font-medium transition',
+       'py-2 text-[0.8rem]' => ! $child,
+       'py-1.5 text-[0.76rem] pl-[2.5rem]' => $child,
        'bg-bt_primary-600 text-white' => $active,
        'text-zinc-200 hover:bg-white/5 hover:text-white' => ! $active,
    ])>
     @unless ($child && empty($item['icon']))
-        <i class="{{ $item['icon'] ?? 'fa-solid fa-circle' }} w-5 text-center text-lg"></i>
+        <i class="{{ $item['icon'] ?? 'fa-solid fa-circle' }} w-4 text-center text-[0.9rem]"></i>
     @endunless
     <span class="flex-1 truncate">{{ __($item['label']) }}</span>
     @if ($badge > 0)

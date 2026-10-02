@@ -9,12 +9,12 @@
     <header class="sticky top-0 z-30 bg-zinc-900 text-white" style="padding-top: env(safe-area-inset-top)">
         {{-- Sized by native app wrappers whose status bar overlaps the page (see the app's JS) --}}
         <div id="main-nav-filler"></div>
-        <div class="h-[4.5rem] flex items-center">
-            <div class="h-full flex items-center gap-2 px-3 sm:px-5 lg:w-72 lg:shrink-0 lg:px-6">
+        <div class="h-16 flex items-center">
+            <div class="h-full flex items-center gap-2 px-3 sm:px-5 lg:w-60 lg:shrink-0 lg:px-6">
                 <button type="button" @click="drawer = true" class="lg:hidden p-2 text-zinc-200 hover:text-white" aria-label="{{ __('Open menu') }}">
                     <i class="fa-solid fa-bars text-lg"></i>
                 </button>
-                @include('shared-ui::workbench.brand')
+                @include('shared-ui::workbench.brand', ['logoClass' => 'h-12'])
             </div>
 
             <div class="flex-1 min-w-0 h-full flex items-center gap-2 sm:gap-4 pr-3 sm:pr-5 lg:px-8">
@@ -43,12 +43,12 @@
 
     <div class="flex-1 flex">
         <!-- Sidebar / drawer (the column keeps the dark background down long pages) -->
-        <div class="lg:w-72 lg:shrink-0 lg:bg-zinc-900">
+        <div class="lg:w-60 lg:shrink-0 lg:bg-zinc-900">
         <aside :class="drawer ? 'translate-x-0' : '-translate-x-full'"
-               class="fixed inset-y-0 left-0 z-40 w-72 max-w-[85%] -translate-x-full bg-zinc-900 text-white lg:border-t lg:border-white/10 flex flex-col transition-transform duration-200 ease-in-out lg:sticky lg:top-[4.5rem] lg:h-[calc(100vh-4.5rem)] lg:max-w-none lg:translate-x-0 lg:shrink-0"
+               class="fixed inset-y-0 left-0 z-40 w-64 max-w-[85%] -translate-x-full bg-zinc-900 text-white lg:border-t lg:border-white/10 flex flex-col transition-transform duration-200 ease-in-out lg:sticky lg:top-16 lg:h-[calc(100vh-4rem)] lg:max-w-none lg:translate-x-0 lg:shrink-0"
                style="padding-top: env(safe-area-inset-top); padding-bottom: env(safe-area-inset-bottom)">
             <div class="lg:hidden flex items-center justify-between gap-3 px-5 h-16 shrink-0 border-b border-white/10">
-                @include('shared-ui::workbench.brand')
+                @include('shared-ui::workbench.brand', ['logoClass' => 'h-10'])
                 <button type="button" @click="drawer = false" class="p-2 text-zinc-300 hover:text-white" aria-label="{{ __('Close menu') }}">
                     <i class="fa-solid fa-xmark"></i>
                 </button>
@@ -61,16 +61,16 @@
                 </div>
             </div>
 
-            <nav class="flex-1 overflow-y-auto px-4 py-6 space-y-1.5">
+            <nav class="flex-1 overflow-y-auto px-3 py-4 space-y-1">
                 @if (config('shared-ui.portal_url'))
                     {{-- A client app: its name heads its menu --}}
-                    <p class="px-4 pb-2 text-xs font-semibold uppercase tracking-wider text-zinc-400">{{ config('app.name') }}</p>
+                    <p class="px-3 pb-2 text-xs font-semibold uppercase tracking-wider text-zinc-400">{{ config('app.name') }}</p>
                 @endif
                 @include('shared-ui::workbench.nav')
                 @stack('sidebar')
             </nav>
 
-            <div class="shrink-0 px-4 pt-3 pb-4 border-t border-white/10 space-y-1">
+            <div class="shrink-0 px-3 pt-3 pb-4 border-t border-white/10 space-y-1">
                 @include('shared-ui::workbench.help-link')
                 {{-- Desktop: the user menu is in the top bar, so just the portal link here --}}
                 <div class="hidden lg:block">
