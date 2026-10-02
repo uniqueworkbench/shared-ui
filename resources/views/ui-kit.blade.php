@@ -8,7 +8,7 @@
         ['Schedule Viewer', 'View schedules and make changes (according to permissions).', 'fa-regular fa-calendar-check', 'green', 'Employees'],
         ['Time Card', 'Clock in, clock out and view time cards.', 'fa-regular fa-file-lines', 'purple', 'Employees'],
         ['Clock In & Out', 'Track employee clock in and out times.', 'fa-regular fa-clock', 'orange', 'Employees'],
-        ['Time Card Approvals', 'View, edit and approve time cards.', 'fa-regular fa-square-check', 'teal', 'Managers, Admins'],
+        ['Time Card Approvals', 'View, edit and approve time cards.', 'fa-regular fa-square-check', 'teal', 'Owners, Admins'],
         ['Payroll', 'Process payroll and manage payroll data.', 'fa-solid fa-file-invoice-dollar', 'red', 'Admins'],
     ];
 @endphp

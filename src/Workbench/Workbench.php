@@ -16,7 +16,7 @@ use Illuminate\Contracts\Session\Session;
  *
  * Use it through the `workbench()` helper or by injecting it:
  *   workbench()->organizationId()        every query on app data filters by it (BelongsToOrganization does)
- *   workbench()->isManager()             owner or manager (role in the organization)
+ *   workbench()->isOwner()               the organization's owners (and admins) — roles are owner and user
  *   workbench()->hasPosition('Lifeguard')  positions drive what people can do
  *   workbench()->inUnit('North')         units drive what they can see
  *   workbench()->seesAllLocations() / locationIds()   which locations' data to show (ScopedToLocations does)
@@ -110,7 +110,7 @@ class Workbench
         return $this->get('organization_name');
     }
 
-    /** owner, manager or staff */
+    /** owner or user (older account apps also sent manager or staff) */
     public function role(): ?string
     {
         return $this->get('role');
@@ -126,7 +126,13 @@ class Workbench
         return $this->isAdmin() || $this->role() === 'owner';
     }
 
-    /** Owners and managers (and admins) */
+    /**
+     * Owners (and admins), or a manager from an account app before roles
+     * became owner and user.
+     *
+     * @deprecated Roles are owner and user: use isOwner() for running the
+     *             organization and can('permission') for what people do in the app.
+     */
     public function isManager(): bool
     {
         return $this->isOwner() || $this->role() === 'manager';
@@ -179,7 +185,7 @@ class Workbench
         return $this->inAny($this->units(), $units);
     }
 
-    /** Sees every location's data (owners, admins, managers not limited to units) */
+    /** Sees every location's data (owners and admins) */
     public function seesAllLocations(): bool
     {
         return $this->get('location_scope', 'all') === 'all';
