@@ -58,6 +58,15 @@ infrastructure (hard-abend error tracking, the Feature API key check) used acros
     `x-pill`, `x-info-box`, and buttons: `x-primary-button` (filled red), `x-outline-button` (red
     outline, `href` makes it a link), `x-secondary-button` (white, grey border), `x-danger-button`
     (dark red). Buttons are sentence case, `text-sm font-semibold`, never uppercase.
+- **Dirty forms** (`resources/views/workbench/dirty-forms.blade.php`, included by `<x-workbench-layout>`):
+  a `<form data-dirty-form>` starts with its Save (submit) buttons disabled; any change enables them plus a
+  Cancel that puts every field back as loaded (changing it back by hand disables them again). Cancel is the
+  form's `[data-dirty-cancel]` button, else one is added before the first Save; `data-dirty-form="reload"`
+  makes Cancel reload the page (forms whose rows Alpine adds/removes); buttons that submit another form
+  (`form="…"`) and `data-dirty-ignore` ones are left alone; a form with no Save hides its Cancel. Alpine state
+  that isn't a plain field resets itself on `@dirty-reset.window` (`$event.detail.form.contains($el)`). After
+  validation errors forms start enabled. `window.uwDirtyForms.init(form)` for forms added later. Opt in only
+  forms that edit existing values — not create forms, one-click actions or messages.
 - `resources/views/layouts/` — app, guest, navigation, public layouts (the
   original top-nav shell; kept for apps that haven't moved to the workbench layout)
 - `resources/views/components/` — all shared Blade components

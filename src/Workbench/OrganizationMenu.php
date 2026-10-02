@@ -19,7 +19,7 @@ class OrganizationMenu
         return [
             'name' => $workbench->organizationName(),
             'avatar_url' => $workbench->organizationAvatarUrl(),
-            'role' => $workbench->role() ? ucfirst($workbench->role()) : null,
+            'role' => $workbench->roleLabel(),
             'switch_url' => count($workbench->get('organizations', [])) > 1 ? route('sso.redirect', ['switch' => 1]) : null,
             'links' => [],
         ];

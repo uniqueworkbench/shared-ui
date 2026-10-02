@@ -36,6 +36,7 @@
         <x-page-loading/>
         <x-confirm-modal/>
         <x-prompt-modal/>
+        @include('shared-ui::workbench.dirty-forms')
         @stack('scripts')
     </body>
 </html>

@@ -131,6 +131,14 @@ class Workbench
         return $this->get('role');
     }
 
+    /** The role as people see it: Owner, or Member for `user` (so it isn't confused with Users) */
+    public function roleLabel(): ?string
+    {
+        $role = $this->role();
+
+        return $role === null ? null : (['owner' => 'Owner', 'user' => 'Member'][$role] ?? ucfirst($role));
+    }
+
     public function isAdmin(): bool
     {
         return (bool) $this->get('is_admin', false);
