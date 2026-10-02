@@ -9,6 +9,12 @@
     'required' => false,
 ])
 
+{{-- With a Google Maps key, the address is looked up rather than typed (<x-address-lookup>, same field names) --}}
+@if (filled(config('shared-ui.google_maps_key')))
+    <x-address-lookup class="mb-4" :prefix="$prefix" :required="$required" label="Address"
+        :values="compact('street', 'street2', 'city', 'state', 'zip', 'country')" />
+@else
+
 <div x-data="{ country: '{{ $country }}' }">
 
     {{-- Street --}}
@@ -111,3 +117,4 @@
     </div>
 
 </div>
+@endif

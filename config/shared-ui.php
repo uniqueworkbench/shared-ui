@@ -31,6 +31,20 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Google Maps (address lookup)
+    |--------------------------------------------------------------------------
+    |
+    | A browser key for the Maps JavaScript API with the Places API (New)
+    | enabled — restrict it to the apps' domains in Google Cloud. With it,
+    | <x-address-lookup> / <x-address-fields> look addresses up in Google;
+    | unset, they're plain fields.
+    |
+    */
+
+    'google_maps_key' => env('GOOGLE_MAPS_API_KEY'),
+
+    /*
+    |--------------------------------------------------------------------------
     | Client App Layout (<x-workbench-layout>)
     |--------------------------------------------------------------------------
     |

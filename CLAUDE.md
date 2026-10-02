@@ -59,6 +59,16 @@ infrastructure (hard-abend error tracking, the Feature API key check) used acros
 - `resources/views/layouts/` — app, guest, navigation, public layouts (the
   original top-nav shell; kept for apps that haven't moved to the workbench layout)
 - `resources/views/components/` — all shared Blade components
+- **Addresses are looked up, not typed** — `<x-address-lookup>` (Google Places API (New) autocomplete,
+  US/Canada; needs `GOOGLE_MAPS_API_KEY` → `config('shared-ui.google_maps_key')`, a browser key with the
+  Maps JavaScript API + Places API (New), restricted to the apps' domains). Picking a suggestion fills
+  `{prefix}street/city/state/zip/country`, and with `place-id` `{prefix}place_id` (present = verified),
+  with `coordinates` `latitude`/`longitude`; apt/suite (`street2`) stays free text; "Can't find it? Enter
+  it manually" types it in (no place id → shown "Entered manually — not verified"). In a form it renders
+  its own named inputs from `:values` (keyed street, street2, …); in an Alpine row, `target="row"` reads
+  and writes that object and renders no names. The script (`window.uwAddressLookup`, Google loaded on the
+  first search) is pushed once to `@stack('scripts')`. `<x-address-fields>` uses it whenever a key is set
+  (same field names), so every app's address forms look addresses up. No key = plain fields.
 - `resources/css/app.css` — base styles, FontAwesome, table utilities
 - `tailwind.config.js` — shared color palette, fonts and type scale (no imports — apps handle
   those); apps spread `sharedConfig.plugins` into their own `plugins` (it sizes unsized text)
