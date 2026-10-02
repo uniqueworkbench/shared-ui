@@ -19,7 +19,7 @@
 
     const IGNORED = ['_token', '_method'];
     const START_DIRTY = @js($startDirty);
-    const CANCEL_CLASS = 'inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-white border border-zinc-300 rounded-md font-semibold text-sm text-zinc-700 hover:bg-zinc-50 focus:outline-none focus:ring-2 focus:ring-bt_primary-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition ease-in-out duration-150';
+    const CANCEL_CLASS = 'text-sm text-gray-600 hover:text-gray-900 focus:outline-none focus:underline disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:text-gray-600'; // plain text, not a button
 
     const fields = (form) => [...form.elements].filter((el) => el.name && ! IGNORED.includes(el.name)
         && ! ['submit', 'button', 'reset', 'image'].includes(el.type) && ! el.matches(':disabled'));
@@ -58,7 +58,10 @@
             const first = saves.find((button) => form.contains(button)) || saves[0];
             first.insertAdjacentElement('beforebegin', cancel);
             // Keep it apart from the Save it sits next to, whatever the container's spacing
-            if (! first.parentElement.matches('.flex, .inline-flex, .grid')) cancel.style.marginRight = '0.75rem';
+            // unless the container already spaces its children (a flex/grid gap) or the Save has a margin of its own
+            const container = getComputedStyle(first.parentElement);
+            const gapped = /flex|grid/.test(container.display) && parseFloat(container.columnGap) > 0;
+            if (! gapped && parseFloat(getComputedStyle(first).marginInlineStart) <= 0) cancel.style.marginInlineEnd = '0.75rem';
         }
 
         // Each field's starting value, to put back on Cancel
