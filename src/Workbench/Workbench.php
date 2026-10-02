@@ -17,11 +17,11 @@ use Illuminate\Contracts\Session\Session;
  * Use it through the `workbench()` helper or by injecting it:
  *   workbench()->organizationId()        every query on app data filters by it (BelongsToOrganization does)
  *   workbench()->isOwner()               the organization's owners (and admins) — roles are owner and user
- *   workbench()->hasPosition('Lifeguard')  positions drive what people can do
+ *   workbench()->hasPersona('Lifeguard')   personas drive what people can do
  *   workbench()->inUnit('North')         units drive what they can see
  *   workbench()->seesAllLocations() / locationIds()   which locations' data to show (ScopedToLocations does)
  *   workbench()->relationship()          employee, contractor, customer or vendor
- *   workbench()->can('schedule.publish') this app's permissions (granted to positions in the account app)
+ *   workbench()->can('schedule.publish') this app's permissions (set per persona in the account app)
  *   workbench()->setting('key')          this app's settings (account app → App Settings)
  */
 class Workbench
@@ -50,7 +50,7 @@ class Workbench
             'customer_id' => $ssoUser['customer_id'] ?? null,
             'vendor_id' => $ssoUser['vendor_id'] ?? null,
             'is_admin' => (bool) ($ssoUser['is_admin'] ?? false),
-            'positions' => $ids($ssoUser['positions'] ?? []),
+            'personas' => $ids($ssoUser['personas'] ?? []),
             'units' => $ids($ssoUser['units'] ?? []),
             // Before location scoping existed, nothing was limited
             'location_scope' => $ssoUser['location_scope'] ?? 'all',
@@ -162,9 +162,9 @@ class Workbench
     }
 
     /** @return array<int, array{id: int, name: string}> */
-    public function positions(): array
+    public function personas(): array
     {
-        return $this->get('positions', []);
+        return $this->get('personas', []);
     }
 
     /** @return array<int, array{id: int, name: string}> */
@@ -173,10 +173,10 @@ class Workbench
         return $this->get('units', []);
     }
 
-    /** Holds the position (by name or id) — what people can do */
-    public function hasPosition(string|int ...$positions): bool
+    /** Holds the persona (by name or id) — what people can do */
+    public function hasPersona(string|int ...$personas): bool
     {
-        return $this->inAny($this->positions(), $positions);
+        return $this->inAny($this->personas(), $personas);
     }
 
     /** Is in the unit (by name or id) — what people can see */
@@ -202,21 +202,46 @@ class Workbench
         return $this->seesAllLocations() || in_array($locationId, $this->locationIds(), true);
     }
 
-    /** Where the user is assigned to work: [{id, name, customer_id, position_id, starts_on, ends_on}] */
+    /** Where the user is assigned to work: [{id, name, customer_id, persona_id, starts_on, ends_on}] */
     public function assignedLocations(): array
     {
         return $this->get('assigned_locations', []);
     }
 
     /**
-     * Whether the user has this app's permission $key: admins define the app's
-     * permissions in the account app (Applications → Permissions), owners grant
-     * them to positions, and owners and admins have them all. Also a gate per
-     * key listed in config/workbench.php `permissions` (@can, can: middleware).
+     * Whether the user has this app's permission $key: the app declares its
+     * permissions, each with a default, in config/workbench.php `permissions`
+     * (the account app syncs them from GET /api/features/permissions), owners
+     * set them per persona, and owners and admins have them all. Also a gate
+     * per declared key (@can, can: middleware).
      */
     public function can(string $key): bool
     {
         return $this->isOwner() || in_array($key, $this->get('permissions', []), true);
+    }
+
+    /**
+     * The permissions the app declares in config/workbench.php `permissions`:
+     * key => label, or key => [label, description, default] (default: whether
+     * employees and contractors have it unless a persona denies it; off =
+     * owners and the personas allowed it).
+     *
+     * @return array<int, array{key: string, label: string, description: ?string, default: bool}>
+     */
+    public static function declaredPermissions(): array
+    {
+        $declared = [];
+        foreach (config('workbench.permissions', []) as $key => $definition) {
+            $definition = is_array($definition) ? $definition : ['label' => $definition];
+            $declared[] = [
+                'key' => (string) $key,
+                'label' => (string) ($definition['label'] ?? $key),
+                'description' => $definition['description'] ?? null,
+                'default' => (bool) ($definition['default'] ?? false),
+            ];
+        }
+
+        return $declared;
     }
 
     /** This app's setting for the user (account app → Applications → App Settings) */

@@ -22,7 +22,7 @@ use Illuminate\Support\Facades\Http;
  *   $directory->locations(['customer_ids' => 5])     a customer's sites
  *   $directory->locations(['visible_to_user_id' => $user->sso_id])
  *   $directory->members(['location_ids' => 12])      everyone at location 12 today
- *   $directory->members(['unit_ids' => 3, 'position_ids' => 7])
+ *   $directory->members(['unit_ids' => 3, 'persona_ids' => 7])
  *   $directory->location(12), customer(5), member($ssoId)
  *
  * Filters are the account app's (its CLAUDE.md, "The directory API"). Each
@@ -45,7 +45,7 @@ class Directory
         return $this->fetch('locations', $filters, $organizationId);
     }
 
-    /** People in the organization, narrowed to an audience (location_ids, unit_ids, position_ids, relationships, …) */
+    /** People in the organization, narrowed to an audience (location_ids, unit_ids, persona_ids, relationships, …) */
     public function members(array $criteria = [], ?int $organizationId = null): Collection
     {
         return $this->fetch('members', $criteria, $organizationId);

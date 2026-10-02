@@ -54,12 +54,16 @@ class SharedUiServiceProvider extends ServiceProvider
                 Gate::define($permission, fn () => workbench()->can($permission));
             }
 
-            // The account app says an organization's shared directory changed: drop the cached copies
             $this->app->booted(function () {
                 if (! $this->app->routesAreCached()) {
+                    // The account app says an organization's shared directory changed: drop the cached copies
                     $this->app['router']->middleware(['api', 'feature-api', 'throttle:120,1'])
                         ->post('/api/features/directory-changed', DirectoryChangedController::class)
                         ->name('features.directory-changed');
+                    // The permissions the app declares, for the account app to sync
+                    $this->app['router']->middleware(['api', 'feature-api', 'throttle:120,1'])
+                        ->get('/api/features/permissions', fn () => ['permissions' => Workbench::declaredPermissions()])
+                        ->name('features.permissions');
                 }
             });
         }

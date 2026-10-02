@@ -120,7 +120,7 @@ infrastructure (hard-abend error tracking, the Feature API key check) used acros
   - `Workbench` (`workbench()` helper, a scoped binding): the signed-in user's
     organization context, kept in the session from the account app's `/api/user`
     at SSO sign-in (`Workbench::fromSsoUser`): organization, role, relationship,
-    positions, units, visible locations, permissions (`can()`), app settings.
+    personas, units, visible locations, permissions (`can()`), app settings.
   - `EnsureWorkbenchContext` (alias `workbench`; apps append it to `web`): a
     signed-in session without a context goes back through SSO.
   - `Concerns\BelongsToOrganization` / `Concerns\ScopedToLocations`: model traits
@@ -130,8 +130,10 @@ infrastructure (hard-abend error tracking, the Feature API key check) used acros
     with a cached client-credentials token (needs the app's `config/sso.php`).
   - `OrganizationMenu::current` for `shared-ui.organization`.
   - For apps with a `config/workbench.php` manifest: a gate per key in its
-    `permissions`, and `POST /api/features/directory-changed` (feature-api) to
-    flush the directory cache when the account app says something changed.
+    `permissions`, `GET /api/features/permissions` (feature-api) — the declared
+    permissions (`Workbench::declaredPermissions()`: key, label, description,
+    default) for the account app to sync — and `POST /api/features/directory-changed`
+    (feature-api) to flush the directory cache when the account app says something changed.
 
 ## Rules
 - No app-*specific* logic here — logic must be generic enough to apply to every
