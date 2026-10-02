@@ -35,8 +35,10 @@ infrastructure (hard-abend error tracking, the Feature API key check) used acros
     `logo-light.png` (black "unique", the guest/login page), inlined as data URIs by
     `UniqueWorkbench\SharedUi\Brand::logo('dark'|'light')` so apps publish nothing.
   - Chrome: a dark (`zinc-900`) top bar across the page — the logo (`brand`),
-    the organization the user is working in with Switch Organization (`organization`), the
-    notification bell (`notifications`), the user's red initials avatar and menu — over a dark
+    the organization the user is working in — its `avatar_url` image (else a building icon), name
+    and `role` pill — with Switch Organization (`organization`), the
+    notification bell (`notifications`), the user's picture (the user model's `avatar_url`, if the
+    app has one) or red initials avatar and menu — over a dark
     sidebar: menu items in white, the active one filled brand red; a client app's name heads its
     menu; Help & Support (`help`), Return to Portal and the version at the bottom;
     `@push('sidebar')` adds a note under the menu. Pages sit on a light `zinc-100` canvas; the
@@ -120,7 +122,9 @@ infrastructure (hard-abend error tracking, the Feature API key check) used acros
   - `Workbench` (`workbench()` helper, a scoped binding): the signed-in user's
     organization context, kept in the session from the account app's `/api/user`
     at SSO sign-in (`Workbench::fromSsoUser`): organization, role, relationship,
-    personas, units, visible locations, permissions (`can()`), app settings.
+    personas, units, visible locations, permissions (`can()`), app settings, and the
+    user's and organization's pictures (`avatarUrl()` / `organizationAvatarUrl()`,
+    which the top bar shows — the user's only when the app's user model has no `avatar_url`).
   - `EnsureWorkbenchContext` (alias `workbench`; apps append it to `web`): a
     signed-in session without a context goes back through SSO.
   - `Concerns\BelongsToOrganization` / `Concerns\ScopedToLocations`: model traits
@@ -128,7 +132,7 @@ infrastructure (hard-abend error tracking, the Feature API key check) used acros
     locations the user may see.
   - `Directory`: the account app's `/api/customers|vendors|locations|members`,
     with a cached client-credentials token (needs the app's `config/sso.php`).
-  - `OrganizationMenu::current` for `shared-ui.organization`.
+  - `OrganizationMenu::current` for `shared-ui.organization` (name, avatar, role pill, Switch).
   - For apps with a `config/workbench.php` manifest: a gate per key in its
     `permissions`, `GET /api/features/permissions` (feature-api) — the declared
     permissions (`Workbench::declaredPermissions()`: key, label, description,

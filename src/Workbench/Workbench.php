@@ -45,6 +45,9 @@ class Workbench
             'organization_id' => isset($ssoUser['organization_id']) ? (int) $ssoUser['organization_id'] : (isset($ssoUser['account_id']) ? (int) $ssoUser['account_id'] : null),
             'organization_name' => $ssoUser['organization_name'] ?? $ssoUser['account_name'] ?? null,
             'role' => $ssoUser['organization_role'] ?? null,
+            // Pictures uploaded in the account app (absolute URLs; null = initials / building icon)
+            'avatar_url' => $ssoUser['avatar_url'] ?? null,
+            'organization_avatar_url' => $ssoUser['organization_avatar_url'] ?? null,
             // Account apps from before relationships: everyone was an employee
             'relationship' => $ssoUser['relationship'] ?? 'employee',
             'customer_id' => $ssoUser['customer_id'] ?? null,
@@ -108,6 +111,18 @@ class Workbench
     public function organizationName(): ?string
     {
         return $this->get('organization_name');
+    }
+
+    /** The user's picture from the account app, or null */
+    public function avatarUrl(): ?string
+    {
+        return $this->get('avatar_url');
+    }
+
+    /** The organization's avatar from the account app, or null */
+    public function organizationAvatarUrl(): ?string
+    {
+        return $this->get('organization_avatar_url');
     }
 
     /** owner or user (older account apps also sent manager or staff) */

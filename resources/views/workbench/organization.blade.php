@@ -1,7 +1,8 @@
 {{--
     The organization the user is working in, in the top bar, with a menu to switch (and the app's own links).
     config('shared-ui.organization'): [Class::class, 'staticMethod'] returning null or
-    ['name' => string, 'switch_url' => ?string, 'links' => [['label' => …, 'url' => …, 'icon' => …], …]].
+    ['name' => string, 'switch_url' => ?string, 'links' => [['label' => …, 'url' => …, 'icon' => …], …],
+     'avatar_url' => ?string (an image instead of the building icon), 'role' => ?string (a pill after the name, e.g. "Owner")].
 --}}
 @php
     $resolver = config('shared-ui.organization');
@@ -11,8 +12,15 @@
     <div x-data="{ open: false }" @click.outside="open = false" class="relative min-w-0">
         <button type="button" @click="open = ! open" :aria-expanded="open.toString()"
                 class="flex items-center gap-3 min-w-0 px-2 py-2 rounded-md text-white hover:bg-white/5" data-organization>
-            <i class="fa-regular fa-building text-xl text-zinc-200"></i>
+            @if (! empty($organization['avatar_url']))
+                <img src="{{ $organization['avatar_url'] }}" alt="" class="h-8 w-8 shrink-0 rounded-full object-cover bg-white ring-1 ring-white/20">
+            @else
+                <i class="fa-regular fa-building text-xl text-zinc-200"></i>
+            @endif
             <span class="truncate text-base font-semibold">{{ $organization['name'] }}</span>
+            @if (filled($organization['role'] ?? null))
+                <span class="shrink-0 inline-flex items-center rounded-full bg-white/10 px-2 py-0.5 text-xs font-medium text-zinc-100 ring-1 ring-inset ring-white/20" data-organization-role>{{ $organization['role'] }}</span>
+            @endif
             <i class="fa-solid fa-chevron-down text-xs text-zinc-300"></i>
         </button>
         <div x-show="open" x-cloak x-transition.opacity
