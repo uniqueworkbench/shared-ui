@@ -9,7 +9,7 @@ use Illuminate\Support\Facades\Http;
 
 /**
  * The shared directory, read from the account app: an organization's
- * customers, vendors, locations and members (people). This app never keeps
+ * customers, vendors, locations, members (people), personas and units. This app never keeps
  * its own copies of these — it stores their ids (customer_id, location_id,
  * users.sso_id) and asks here for names and details, cached for
  * config('workbench.directory_cache_seconds').
@@ -23,7 +23,8 @@ use Illuminate\Support\Facades\Http;
  *   $directory->locations(['visible_to_user_id' => $user->sso_id])
  *   $directory->members(['location_ids' => 12])      everyone at location 12 today
  *   $directory->members(['unit_ids' => 3, 'persona_ids' => 7])
- *   $directory->location(12), customer(5), member($ssoId)
+ *   $directory->personas(), units()                  for pickers ("this shift needs a Lifeguard")
+ *   $directory->location(12), customer(5), member($ssoId), persona(7)
  *
  * Filters are the account app's (its CLAUDE.md, "The directory API"). Each
  * row is an array. Failures throw Illuminate\Http\Client\RequestException.
@@ -49,6 +50,23 @@ class Directory
     public function members(array $criteria = [], ?int $organizationId = null): Collection
     {
         return $this->fetch('members', $criteria, $organizationId);
+    }
+
+    /** The organization's personas (what people can do): [{id, name, description}] */
+    public function personas(array $filters = [], ?int $organizationId = null): Collection
+    {
+        return $this->fetch('personas', $filters, $organizationId);
+    }
+
+    /** The organization's units (what people can see): [{id, name, description, parent_id}] */
+    public function units(array $filters = [], ?int $organizationId = null): Collection
+    {
+        return $this->fetch('units', $filters, $organizationId);
+    }
+
+    public function persona(int $id, ?int $organizationId = null): ?array
+    {
+        return $this->personas(['ids' => $id], $organizationId)->firstWhere('id', $id);
     }
 
     public function customer(int $id, ?int $organizationId = null): ?array

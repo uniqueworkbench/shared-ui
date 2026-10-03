@@ -147,7 +147,7 @@ infrastructure (hard-abend error tracking, the Feature API key check) used acros
   - `Concerns\BelongsToOrganization` / `Concerns\ScopedToLocations`: model traits
     that fill in and filter `organization_id`, and limit location data to the
     locations the user may see.
-  - `Directory`: the account app's `/api/customers|vendors|locations|members`,
+  - `Directory`: the account app's `/api/customers|vendors|locations|members|personas|units`,
     with a cached client-credentials token (needs the app's `config/sso.php`).
   - `OrganizationMenu::current` for `shared-ui.organization` (name, avatar, role pill, Switch).
   - For apps with a `config/workbench.php` manifest: a gate per key in its
