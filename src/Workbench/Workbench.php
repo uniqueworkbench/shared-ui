@@ -19,6 +19,7 @@ use Illuminate\Contracts\Session\Session;
  *   workbench()->isOwner()               the organization's owners (and admins) — roles are owner and user
  *   workbench()->hasPersona('Lifeguard')   personas drive what people can do
  *   workbench()->inUnit('North')         units drive what they can see
+ *   workbench()->unitScopeIds() / canSeeUnit()   their units and the units below them
  *   workbench()->seesAllLocations() / locationIds()   which locations' data to show (ScopedToLocations does)
  *   workbench()->relationship()          employee, contractor, customer or vendor
  *   workbench()->can('schedule.publish') this app's permissions (set per persona in the account app)
@@ -55,6 +56,8 @@ class Workbench
             'is_admin' => (bool) ($ssoUser['is_admin'] ?? false),
             'personas' => $ids($ssoUser['personas'] ?? []),
             'units' => $ids($ssoUser['units'] ?? []),
+            // Their units plus every unit below them (the account app's User::unitScopeIn)
+            'unit_scope_ids' => array_values(array_map('intval', $ssoUser['unit_scope_ids'] ?? array_column($ssoUser['units'] ?? [], 'id'))),
             // Before location scoping existed, nothing was limited
             'location_scope' => $ssoUser['location_scope'] ?? 'all',
             'location_ids' => array_map('intval', $ssoUser['location_ids'] ?? []),
@@ -223,6 +226,18 @@ class Workbench
     public function canSeeLocation(?int $locationId): bool
     {
         return $this->seesAllLocations() || in_array($locationId, $this->locationIds(), true);
+    }
+
+    /** The units whose data the user may see: their own and every unit below them */
+    public function unitScopeIds(): array
+    {
+        return $this->get('unit_scope_ids', array_column($this->units(), 'id'));
+    }
+
+    /** Sees the unit's data: everyone who sees every location, else units in their scope */
+    public function canSeeUnit(?int $unitId): bool
+    {
+        return $this->seesAllLocations() || in_array($unitId, $this->unitScopeIds(), true);
     }
 
     /** Where the user is assigned to work: [{id, name, customer_id, persona_id, starts_on, ends_on}] */

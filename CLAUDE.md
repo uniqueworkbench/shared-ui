@@ -139,7 +139,7 @@ infrastructure (hard-abend error tracking, the Feature API key check) used acros
   - `Workbench` (`workbench()` helper, a scoped binding): the signed-in user's
     organization context, kept in the session from the account app's `/api/user`
     at SSO sign-in (`Workbench::fromSsoUser`): organization, role, relationship,
-    personas, units, visible locations, permissions (`can()`), app settings, and the
+    personas, units (`unitScopeIds()`/`canSeeUnit()`: their units and those below), visible locations, permissions (`can()`), app settings, and the
     user's and organization's pictures (`avatarUrl()` / `organizationAvatarUrl()`,
     which the top bar shows — the user's only when the app's user model has no `avatar_url`).
   - `EnsureWorkbenchContext` (alias `workbench`; apps append it to `web`): a
