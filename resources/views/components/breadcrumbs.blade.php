@@ -6,9 +6,13 @@
     // instead of resetting it. Earlier ancestors may be more than one hop
     // back, so they stay plain links. Mirrors the same fix in measure's
     // AppHeader.jsx Breadcrumbs component.
+    // Only when the previous page really is that link (the referrer's path):
+    // after a form posted and redirected here, the page before is the form,
+    // and going "back" would reopen it — then the link is followed instead.
+    // (window.URL: in an inline handler, a bare URL is document.URL, a string.)
     $lastHasUrl = count($breadcrumbs) > 0 && isset($breadcrumbs[count($breadcrumbs) - 1]['url']);
     $immediateParentIndex = $lastHasUrl ? null : count($breadcrumbs) - 2;
-    $backOnClick = "if (window.history.length > 1) { event.preventDefault(); window.history.back(); }";
+    $backOnClick = "try { var r = document.referrer && new window.URL(document.referrer); if (r && r.origin === window.location.origin && r.pathname === new window.URL(this.href).pathname && window.history.length > 1) { event.preventDefault(); window.history.back(); } } catch (e) {}";
 @endphp
 @if(count($breadcrumbs) > 0)
 <nav class="flex mb-4" aria-label="Breadcrumb">

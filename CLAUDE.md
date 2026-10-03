@@ -59,14 +59,22 @@ infrastructure (hard-abend error tracking, the Feature API key check) used acros
     outline, `href` makes it a link), `x-secondary-button` (white, grey border), `x-danger-button`
     (dark red). Buttons are sentence case, `text-sm font-semibold`, never uppercase.
 - **Dirty forms** (`resources/views/workbench/dirty-forms.blade.php`, included by `<x-workbench-layout>`):
-  a `<form data-dirty-form>` starts with its Save (submit) buttons disabled; any change enables them plus a
-  Cancel that puts every field back as loaded (changing it back by hand disables them again). Cancel is the
-  form's `[data-dirty-cancel]` button, else one is added before the first Save; `data-dirty-form="reload"`
-  makes Cancel reload the page (forms whose rows Alpine adds/removes); buttons that submit another form
-  (`form="…"`) and `data-dirty-ignore` ones are left alone; a form with no Save hides its Cancel. Alpine state
-  that isn't a plain field resets itself on `@dirty-reset.window` (`$event.detail.form.contains($el)`). After
-  validation errors forms start enabled. `window.uwDirtyForms.init(form)` for forms added later. Opt in only
-  forms that edit existing values — not create forms, one-click actions or messages.
+  a `<form data-dirty-form>` starts with its Save (submit) buttons disabled; any change enables them (changing
+  it back by hand disables them again). Its **Cancel is always enabled** and returns to the previous state: on a
+  full-page form, with changes it puts every field back as loaded (`data-dirty-form="reload"`: reloads, for
+  forms whose rows Alpine adds/removes), with none it goes back to the page the person came from (else to the
+  Cancel's `data-href` / the form's `data-dirty-back`); an inline form's Cancel (`data-dirty-cancel="collapse"`
+  plus its own `@click` that hides the form) puts the fields back and lets that click collapse it. Cancel is the
+  form's `[data-dirty-cancel]` button, else a plain-text one is added before the first Save (spaced from it
+  unless the container has a gap or Save a margin). Buttons that submit another form (`form="…"`) and
+  `data-dirty-ignore` ones are left alone; a form with no Save hides its Cancel. Alpine state that isn't a plain
+  field resets itself on `@dirty-reset.window` (`$event.detail.form.contains($el)`). After validation errors forms
+  start enabled. `window.uwDirtyForms.init(form)` for forms added later. Opt in only forms that edit existing values.
+  - **Create pages' Cancel**: `<a data-back href="…">` goes back to the page the person came from (same site,
+    another page), else follows its href.
+- **Breadcrumbs** (`<x-breadcrumbs>`): the link just above the current page goes *back* (keeping a filtered
+  list's state) only when the previous page is that link; otherwise (e.g. after a form posted and redirected
+  here) it's followed normally.
 - `resources/views/layouts/` — app, guest, navigation, public layouts (the
   original top-nav shell; kept for apps that haven't moved to the workbench layout)
 - `resources/views/components/` — all shared Blade components

@@ -1,7 +1,13 @@
 {{--
     Dirty forms: <form data-dirty-form> starts with its Save (submit) buttons disabled; changing any field
-    enables them, along with a Cancel that puts every field back to how the page loaded (changing it back
-    by hand disables them again). Included once by <x-workbench-layout>; opt in per form.
+    enables them (changing it back by hand disables them again). Its Cancel is always enabled and returns to
+    the previous state:
+    - a full-page form: with changes, puts every field back to how the page loaded; with none, goes back to
+      the page the person came from (else to the Cancel's data-href / the form's data-dirty-back, if set);
+    - an inline form (Cancel has data-dirty-cancel="collapse", plus its own @click that hides the form):
+      puts the fields back and lets that click collapse it.
+    Links with data-back (a create page's Cancel) go back to the page the person came from, else to their href.
+    Included once by <x-workbench-layout>; opt in per form.
 
     - data-dirty-form="reload" — Cancel reloads the page instead: for forms whose fields come and go
       (rows added or removed by Alpine), which putting values back can't undo.
@@ -32,6 +38,26 @@
     };
 
     const snapshot = (form) => JSON.stringify(fields(form).map((el) => [el.name, valueOf(el)]));
+
+    // Back to the page the person came from — same site, another page — if there is one
+    const canGoBack = () => {
+        try {
+            const from = document.referrer && new URL(document.referrer);
+            return Boolean(from) && from.origin === location.origin && from.pathname !== location.pathname && history.length > 1;
+        } catch (e) {
+            return false;
+        }
+    };
+
+    // A create page's Cancel (<a data-back href="…">): back where they came from, else the link
+    document.addEventListener('click', (event) => {
+        const link = event.target.closest('a[data-back]');
+        if (! link || event.button !== 0 || event.ctrlKey || event.metaKey || event.shiftKey || event.altKey) return;
+        if (canGoBack()) {
+            event.preventDefault();
+            history.back();
+        }
+    });
 
     const saveButtons = (form) => [
         ...form.querySelectorAll('button[type=submit], button:not([type]), input[type=submit]'),
@@ -77,7 +103,6 @@
             state.dirty = dirty;
             // The classes make plain <button type="submit"> Saves look disabled too
             saves.forEach((button) => { button.disabled = ! dirty; button.classList.add('disabled:opacity-50', 'disabled:cursor-not-allowed'); });
-            cancel.disabled = ! dirty;
             form.toggleAttribute('data-dirty', dirty);
         };
         const check = () => set(state.forced || snapshot(form) !== original);
@@ -87,11 +112,8 @@
         // Alpine-driven fields (hidden inputs, rows added or removed) change without input events
         form.addEventListener('click', () => setTimeout(check, 0));
 
-        cancel.addEventListener('click', () => {
-            if (form.dataset.dirtyForm === 'reload') {
-                window.location.reload();
-                return;
-            }
+        // Put every field back to how the page loaded
+        const reset = () => {
             initial.forEach(({ el, value, checked, selected }) => {
                 if (el.type === 'file') el.value = '';
                 else if (el.type === 'checkbox' || el.type === 'radio') el.checked = checked;
@@ -104,6 +126,23 @@
             window.dispatchEvent(new CustomEvent('dirty-reset', { detail: { form } }));
             state.forced = false;
             setTimeout(check, 0);
+        };
+
+        // Always enabled: back to the previous state (see the top)
+        cancel.disabled = false;
+        cancel.addEventListener('click', () => {
+            if (cancel.dataset.dirtyCancel === 'collapse') {
+                reset(); // its own @click collapses the form
+                return;
+            }
+            if (state.dirty) {
+                if (form.dataset.dirtyForm === 'reload') window.location.reload();
+                else reset();
+                return;
+            }
+            const fallback = cancel.dataset.href || form.dataset.dirtyBack;
+            if (canGoBack()) history.back();
+            else if (fallback) window.location.href = fallback;
         });
 
         set(state.forced);
