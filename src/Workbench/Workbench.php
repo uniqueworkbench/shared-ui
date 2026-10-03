@@ -56,8 +56,8 @@ class Workbench
             'is_admin' => (bool) ($ssoUser['is_admin'] ?? false),
             'personas' => $ids($ssoUser['personas'] ?? []),
             'units' => $ids($ssoUser['units'] ?? []),
-            // Their units plus every unit below them (the account app's User::unitScopeIn)
-            'unit_scope_ids' => array_values(array_map('intval', $ssoUser['unit_scope_ids'] ?? array_column($ssoUser['units'] ?? [], 'id'))),
+            // Their units plus every unit below them (the account app's User::unitScopeIn); null from older account apps
+            'unit_scope_ids' => isset($ssoUser['unit_scope_ids']) ? array_values(array_map('intval', $ssoUser['unit_scope_ids'])) : null,
             // Before location scoping existed, nothing was limited
             'location_scope' => $ssoUser['location_scope'] ?? 'all',
             'location_ids' => array_map('intval', $ssoUser['location_ids'] ?? []),
@@ -231,7 +231,7 @@ class Workbench
     /** The units whose data the user may see: their own and every unit below them */
     public function unitScopeIds(): array
     {
-        return $this->get('unit_scope_ids', array_column($this->units(), 'id'));
+        return $this->get('unit_scope_ids') ?? array_column($this->units(), 'id');
     }
 
     /** Sees the unit's data: everyone who sees every location, else units in their scope */
