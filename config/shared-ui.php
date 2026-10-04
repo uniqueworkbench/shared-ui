@@ -59,9 +59,16 @@ return [
     |              is a header that expands to its children; it starts open while
     |              a child is active and is hidden when no child is visible.
     | user_menu:   extra links in the user menu (label, route, icon), above
-    |              Return to Portal and Log Out.
-    | portal_url:  where "Return to Portal" goes — the Unique Workbench account
-    |              app. null hides it (the account app is the portal).
+    |              Return to Workbench and Log Out.
+    | portal_url:  where "Return to Workbench" (the top of the menu) goes — the
+    |              Unique Workbench account app. null hides it (the account app
+    |              is the portal).
+    | app_header_logo: the app's wide logo for the dark top bar (a path under
+    |              public/, e.g. 'images/app_header_logo.png'; light on dark,
+    |              name included), shown at the top left of the top bar and drawer.
+    | app_icon:    the app's square logo ('images/app_icon.png'), shown on a
+    |              small white tile with the app name when there's no header logo.
+    |              Neither (or files not there yet) = the Unique Workbench logo.
     |
     | Apps override these in their own config/shared-ui.php.
     |
@@ -76,6 +83,10 @@ return [
     'user_menu' => [],
 
     'portal_url' => env('SSO_URL', 'https://account.uniqueworkbench.com'),
+
+    'app_header_logo' => null,
+
+    'app_icon' => null,
 
     /*
     | The top bar and the bottom of the menu (all optional; null hides them):

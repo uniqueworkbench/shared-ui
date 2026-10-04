@@ -1,6 +1,7 @@
 {{--
     The signed-in user's links: config('shared-ui.user_menu') items (label, route, icon),
-    Return to Portal (unless portal_url is null — e.g. in the portal itself) and Log Out.
+    Return to Workbench in the dropdown (unless portal_url is null — e.g. in the portal itself; the drawer
+    has it at the top of the menu) and Log Out.
     $style: "dropdown" (desktop user menu) or "list" (drawer).
 --}}
 @php $style ??= 'list'; @endphp
@@ -17,14 +18,10 @@
     @endif
 @endforeach
 
-@if (config('shared-ui.portal_url'))
-    @if ($style === 'dropdown')
-        <x-dropdown-link :href="config('shared-ui.portal_url')">
-            <i class="fa-solid fa-arrow-left w-4 mr-2 text-center"></i>{{ __('Return to Portal') }}
-        </x-dropdown-link>
-    @else
-        @include('shared-ui::workbench.portal-link')
-    @endif
+@if (config('shared-ui.portal_url') && $style === 'dropdown')
+    <x-dropdown-link :href="config('shared-ui.portal_url')">
+        <i class="fa-solid fa-arrow-left w-4 mr-2 text-center"></i>{{ __('Return to Workbench') }}
+    </x-dropdown-link>
 @endif
 
 <form method="POST" action="{{ route('logout') }}">

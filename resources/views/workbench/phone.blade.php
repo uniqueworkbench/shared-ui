@@ -1,4 +1,4 @@
-{{-- Phone layout: a dark app-style header (hamburger, centred title, notifications) with a dark drawer holding the user, the organization, menu, their links, Log Out and the version. --}}
+{{-- Phone layout: a dark app-style header (hamburger, centred title, notifications) with a dark drawer holding the user, the organization, Return to Workbench, menu, their links, Log Out and the version. --}}
 <div x-data="{ drawer: false }" @keydown.escape.window="drawer = false" class="min-h-screen flex flex-col">
     <!-- Header -->
     <header class="sticky top-0 z-20 bg-zinc-900 text-white" style="padding-top: env(safe-area-inset-top)">
@@ -35,7 +35,9 @@
 
         <nav class="flex-1 overflow-y-auto px-3 py-4 space-y-1">
             @if (config('shared-ui.portal_url'))
-                <p class="px-3 pb-2 text-xs font-semibold uppercase tracking-wider text-zinc-400">{{ config('app.name') }}</p>
+                <div class="pb-2 mb-2 border-b border-white/10">
+                    @include('shared-ui::workbench.portal-link')
+                </div>
             @endif
             @include('shared-ui::workbench.nav')
             @stack('sidebar')

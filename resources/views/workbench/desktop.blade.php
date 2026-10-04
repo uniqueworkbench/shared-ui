@@ -1,6 +1,6 @@
 {{--
     Desktop layout: a dark top bar across the page (logo, the organization, notifications, the user menu)
-    over a dark left sidebar (menu, Help & Support, Return to Portal, version) and the page on a light
+    over a dark left sidebar (Return to Workbench, menu, Help & Support, version) and the page on a light
     grey canvas. Below lg the sidebar becomes a drawer (hamburger in the top bar) that also holds the
     user, their links and Log Out.
 --}}
@@ -63,8 +63,10 @@
 
             <nav class="flex-1 overflow-y-auto px-3 py-4 space-y-1">
                 @if (config('shared-ui.portal_url'))
-                    {{-- A client app: its name heads its menu --}}
-                    <p class="px-3 pb-2 text-xs font-semibold uppercase tracking-wider text-zinc-400">{{ config('app.name') }}</p>
+                    {{-- A client app: Return to Workbench heads its menu --}}
+                    <div class="pb-2 mb-2 border-b border-white/10">
+                        @include('shared-ui::workbench.portal-link')
+                    </div>
                 @endif
                 @include('shared-ui::workbench.nav')
                 @stack('sidebar')
@@ -72,12 +74,7 @@
 
             <div class="shrink-0 px-3 pt-3 pb-4 border-t border-white/10 space-y-1">
                 @include('shared-ui::workbench.help-link')
-                {{-- Desktop: the user menu is in the top bar, so just the portal link here --}}
-                <div class="hidden lg:block">
-                    @if (config('shared-ui.portal_url'))
-                        @include('shared-ui::workbench.portal-link')
-                    @endif
-                </div>
+                {{-- Desktop: the user menu is in the top bar; the drawer holds it here --}}
                 @auth
                     <div class="lg:hidden space-y-1">
                         @include('shared-ui::workbench.user-links', ['style' => 'list'])

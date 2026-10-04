@@ -9,13 +9,13 @@ infrastructure (hard-abend error tracking, the Feature API key check) used acros
   uses (the account app via its `layouts/app.blade.php` override, client apps
   directly). Two layouts, picked by `config('shared-ui.layout')`:
   - **desktop** — a dark top bar (logo, organization, bell, user menu) over a dark
-    left sidebar (menu, Help & Support, Return to Portal, version at the very
+    left sidebar (Return to Workbench at the very top, menu, Help & Support, version at the very
     bottom); the page title (`header`) heads the content. Below `lg` the sidebar
     turns into a drawer (hamburger in the top bar) that also holds the user,
     their links and Log Out.
   - **phone** — dark app-style header (hamburger + centred title + bell); the
-    drawer holds the user, organization, menu, their links, Log Out and the
-    version. Content is `max-w-lg`.
+    drawer holds the user, organization, Return to Workbench, menu, their links,
+    Log Out and the version. Content is `max-w-lg`.
   - Configured per app in its `config/shared-ui.php` (also `organization`, `notifications`,
     `help` — see the package config): `navigation` (label,
     route, icon, optional `active`/`except` routeIs() patterns, `can` gate,
@@ -23,7 +23,8 @@ infrastructure (hard-abend error tracking, the Feature API key check) used acros
     and no route is a collapsible group header, open while a child is active;
     while collapsed it shows its children's badges added up, expanded each child shows its own),
     `user_menu` (extra user
-    links), `portal_url` (null hides Return to Portal). No closures — apps
+    links), `portal_url` (null hides Return to Workbench), `app_header_logo` / `app_icon` (paths
+    under `public/`: the app's wide logo, else its square icon + name, replace the Unique Workbench logo). No closures — apps
     cache config on deploy. Items with unknown routes are skipped.
   - Slots `header`, `breadcrumb`; props `title`, `padded` (false = pages bring
     their own spacing); `@push('banners')` renders under the header. The
@@ -34,13 +35,15 @@ infrastructure (hard-abend error tracking, the Feature API key check) used acros
   - Logo: `resources/images/logo-dark.png` (white "unique", for the dark chrome) and
     `logo-light.png` (black "unique", the guest/login page), inlined as data URIs by
     `UniqueWorkbench\SharedUi\Brand::logo('dark'|'light')` so apps publish nothing.
-  - Chrome: a dark (`zinc-900`) top bar across the page — the logo (`brand`),
+  - Chrome: a dark (`zinc-900`) top bar across the page — the logo (`brand`: the app's
+    wide `app_header_logo`, else its `app_icon` on a small white tile + its name, else the Unique
+    Workbench logo; a configured file that isn't there yet is skipped),
     the organization the user is working in — its `avatar_url` image (else a building icon), name
     and `role` pill — with Switch Organization (`organization`), the
     notification bell (`notifications`), the user's picture (the user model's `avatar_url`, if the
     app has one) or red initials avatar and menu — over a dark
-    sidebar: menu items in white, the active one filled brand red; a client app's name heads its
-    menu; Help & Support (`help`), Return to Portal and the version at the bottom;
+    sidebar: menu items in white, the active one filled brand red; a client app's menu starts with
+    Return to Workbench (`portal-link`); Help & Support (`help`) and the version at the bottom;
     `@push('sidebar')` adds a note under the menu. Pages sit on a light `zinc-100` canvas; the
     `header` slot is the page title (3xl bold).
   - Colour: `bt_primary` is the brand red (`#D03A3A` at 600) — primary buttons, links, the active
