@@ -1,14 +1,16 @@
 {{--
-    The top of the dark top bar (and drawer). A client app shows its own brand: its wide header logo
-    (config('shared-ui.app_header_logo'), made for the dark bar), else its square icon (app_icon) on a small white
-    tile with the app name; an app with neither (e.g. the portal) shows the Unique Workbench logo. Paths are under
-    public/ and are skipped while the file isn't there. The environment outside production.
+    The top of the dark top bar (and drawer). A client app shows its own brand: its wide header logo (made for
+    the dark bar), else its square icon on a small white tile with the app name; an app with neither (e.g. the
+    portal) shows the Unique Workbench logo. Each image is the one uploaded in the account app (Admin →
+    Applications, sent at sign-in — Workbench::brandingUrl), else the app's own file (config('shared-ui.app_header_logo')
+    / app_icon, paths under public/, skipped while the file isn't there). The environment outside production.
     $logoClass sizes the Unique Workbench logo.
 --}}
 @php
-    $brandImage = fn (string $key) => ($path = config('shared-ui.' . $key)) && is_file(public_path($path)) ? asset($path) : null;
-    $headerLogo = $brandImage('app_header_logo');
-    $appIcon = $headerLogo ? null : $brandImage('app_icon');
+    $brandImage = fn (string $key, string $uploaded) => (auth()->check() ? workbench()->brandingUrl($uploaded) : null)
+        ?: (($path = config('shared-ui.' . $key)) && is_file(public_path($path)) ? asset($path) : null);
+    $headerLogo = $brandImage('app_header_logo', 'header_logo_url');
+    $appIcon = $headerLogo ? null : $brandImage('app_icon', 'icon_url');
 @endphp
 <a href="{{ \Illuminate\Support\Facades\Route::has('dashboard') ? route('dashboard') : url('/') }}" class="flex items-center gap-2 min-w-0 text-white">
     @if ($headerLogo)

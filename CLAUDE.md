@@ -24,7 +24,8 @@ infrastructure (hard-abend error tracking, the Feature API key check) used acros
     while collapsed it shows its children's badges added up, expanded each child shows its own),
     `user_menu` (extra user
     links), `portal_url` (null hides Return to Workbench), `app_header_logo` / `app_icon` (paths
-    under `public/`: the app's wide logo, else its square icon + name, replace the Unique Workbench logo). No closures — apps
+    under `public/`, the fallback when nothing was uploaded in the account app: the app's wide logo, else its
+    square icon + name, replace the Unique Workbench logo). No closures — apps
     cache config on deploy. Items with unknown routes are skipped.
   - Slots `header`, `breadcrumb`; props `title`, `padded` (false = pages bring
     their own spacing); `@push('banners')` renders under the header. The
@@ -36,8 +37,11 @@ infrastructure (hard-abend error tracking, the Feature API key check) used acros
     `logo-light.png` (black "unique", the guest/login page), inlined as data URIs by
     `UniqueWorkbench\SharedUi\Brand::logo('dark'|'light')` so apps publish nothing.
   - Chrome: a dark (`zinc-900`) top bar across the page — the logo (`brand`: the app's
-    wide `app_header_logo`, else its `app_icon` on a small white tile + its name, else the Unique
-    Workbench logo; a configured file that isn't there yet is skipped),
+    wide header logo, else its icon on a small white tile + its name, else the Unique Workbench logo —
+    each the one uploaded in the account app's Admin → Applications, sent at sign-in as `app_branding`
+    (`workbench()->brandingUrl('header_logo_url'|'icon_url'|'favicon_url')`), else the app's
+    `app_header_logo` / `app_icon` file; a configured file that isn't there yet is skipped; the uploaded
+    favicon replaces the app's own),
     the organization the user is working in — its `avatar_url` image (else a building icon), name
     and `role` pill — with Switch Organization (`organization`), the
     notification bell (`notifications`), the user's picture (the user model's `avatar_url`, if the

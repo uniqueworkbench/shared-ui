@@ -21,7 +21,8 @@
         <meta name="csrf-token" content="{{ csrf_token() }}">
 
         <title>{{ $pageTitle }}</title>
-        <link rel="icon" type="image/x-icon" href="{{ config('app.favicon', '/favicon.ico') }}">
+        {{-- The favicon uploaded in the account app (sent at sign-in), else the app's own --}}
+        <link rel="icon" href="{{ (auth()->check() ? workbench()->brandingUrl('favicon_url') : null) ?: config('app.favicon', '/favicon.ico') }}">
 
         <!-- Fonts -->
         <link rel="preconnect" href="https://fonts.bunny.net">

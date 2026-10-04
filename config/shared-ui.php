@@ -63,12 +63,13 @@ return [
     | portal_url:  where "Return to Workbench" (the top of the menu) goes — the
     |              Unique Workbench account app. null hides it (the account app
     |              is the portal).
-    | app_header_logo: the app's wide logo for the dark top bar (a path under
-    |              public/, e.g. 'images/app_header_logo.png'; light on dark,
-    |              name included), shown at the top left of the top bar and drawer.
-    | app_icon:    the app's square logo ('images/app_icon.png'), shown on a
-    |              small white tile with the app name when there's no header logo.
-    |              Neither (or files not there yet) = the Unique Workbench logo.
+    | app_header_logo / app_icon: the app's own brand files (paths under public/,
+    |              e.g. 'images/app_header_logo.png' — wide, light on dark, name
+    |              included — and 'images/app_icon.png', square), used when no header
+    |              logo / icon was uploaded in the account app (Admin → Applications,
+    |              sent at sign-in). Shown at the top left: the header logo, else the
+    |              icon with the app name, else the Unique Workbench logo. The
+    |              uploaded favicon likewise replaces app.favicon / favicon.ico.
     |
     | Apps override these in their own config/shared-ui.php.
     |

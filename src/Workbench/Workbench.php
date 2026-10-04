@@ -66,6 +66,11 @@ class Workbench
             // What this app lets them do (the account app's app permissions for this app)
             'permissions' => array_values($ssoUser['permissions'] ?? []),
             'app_settings' => (array) ($ssoUser['app_settings'] ?? []),
+            // This app's brand, uploaded in the account app (absolute URLs; null = this app's own files)
+            'app_branding' => array_map(
+                fn ($url) => is_string($url) && $url !== '' ? $url : null,
+                array_intersect_key((array) ($ssoUser['app_branding'] ?? []), array_flip(['icon_url', 'header_logo_url', 'favicon_url'])),
+            ),
         ];
     }
 
@@ -126,6 +131,15 @@ class Workbench
     public function organizationAvatarUrl(): ?string
     {
         return $this->get('organization_avatar_url');
+    }
+
+    /**
+     * This app's brand from the account app (Admin → Applications), or null:
+     * 'icon_url' (square), 'header_logo_url' (wide, for the dark top bar), 'favicon_url'.
+     */
+    public function brandingUrl(string $key): ?string
+    {
+        return $this->get('app_branding', [])[$key] ?? null;
     }
 
     /** owner or user (older account apps also sent manager or staff) */
