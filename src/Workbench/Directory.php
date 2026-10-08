@@ -9,10 +9,10 @@ use Illuminate\Support\Facades\Http;
 
 /**
  * The shared directory, read from the account app: an organization's
- * customers, vendors, locations, members (people), personas and units. This app never keeps
- * its own copies of these — it stores their ids (customer_id, location_id,
- * users.sso_id) and asks here for names and details, cached for
- * config('workbench.directory_cache_seconds').
+ * customers, vendors, locations, people (contacts, with or without a login), members (the
+ * logins among them), personas and units. This app never keeps its own copies of these — it
+ * stores their ids (customer_id, location_id, contact_id) and asks here for names and details,
+ * cached for config('workbench.directory_cache_seconds').
  *
  * Server to server with a client-credentials token (this app's SSO client,
  * scope `directory`), so it also works in jobs and commands — pass the
@@ -20,11 +20,12 @@ use Illuminate\Support\Facades\Http;
  *
  *   $directory->locations()                          active locations
  *   $directory->locations(['customer_ids' => 5])     a customer's sites
- *   $directory->locations(['visible_to_user_id' => $user->sso_id])
- *   $directory->members(['location_ids' => 12])      everyone at location 12 today
- *   $directory->members(['unit_ids' => 3, 'persona_ids' => 7])
+ *   $directory->locations(['visible_to_contact_id' => workbench()->contactId()])
+ *   $directory->people(['location_ids' => 12])       everyone at location 12 today (contact ids)
+ *   $directory->people(['unit_ids' => 3, 'persona_ids' => 7, 'types' => 'employee'])
+ *   $directory->members(['location_ids' => 12])      the same, only those who sign in (user ids)
  *   $directory->personas(), units()                  for pickers ("this shift needs a Lifeguard")
- *   $directory->location(12), customer(5), member($ssoId), persona(7)
+ *   $directory->location(12), customer(5), person($contactId), member($ssoId), persona(7)
  *
  * Filters are the account app's (its CLAUDE.md, "The directory API"). Each
  * row is an array. Failures throw Illuminate\Http\Client\RequestException.
@@ -46,7 +47,28 @@ class Directory
         return $this->fetch('locations', $filters, $organizationId);
     }
 
-    /** People in the organization, narrowed to an audience (location_ids, unit_ids, persona_ids, relationships, …) */
+    /**
+     * The organization's people — its contacts, with or without a login — narrowed to an audience
+     * (location_ids, unit_ids, persona_ids, types, user_ids, can_sign_in, …). `id` is the contact
+     * id, which apps key people by (workbench()->contactId() is the signed-in person's); `user_id`
+     * is their login, null until they first log in. Needs an account app with /api/people.
+     */
+    public function people(array $criteria = [], ?int $organizationId = null): Collection
+    {
+        return $this->fetch('people', $criteria, $organizationId);
+    }
+
+    /** A person by their contact id */
+    public function person(int $contactId, ?int $organizationId = null): ?array
+    {
+        return $this->people(['ids' => $contactId], $organizationId)->first();
+    }
+
+    /**
+     * The people who sign in, keyed by user id (each with its contact_id), narrowed to an audience
+     * (location_ids, unit_ids, persona_ids, relationships, …) — for apps that key people by login;
+     * people() is the whole directory.
+     */
     public function members(array $criteria = [], ?int $organizationId = null): Collection
     {
         return $this->fetch('members', $criteria, $organizationId);

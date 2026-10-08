@@ -2,13 +2,14 @@
     Client app layout: <x-workbench-layout> ... </x-workbench-layout>
 
     Slots: $header (page title), $breadcrumb (optional), $slot (page content).
-    Props: title (browser tab title), padded (false = pages bring their own spacing).
+    Props: title (browser tab title), padded (false = pages bring their own spacing),
+    nav (false = no menu: desktop drops the sidebar and drawer, phone keeps the drawer for the user's links only).
     @push('banners') content shows under the header (e.g. impersonation notices).
     Navigation style comes from config('shared-ui.layout'): "desktop" (left
     sidebar, a drawer on small screens) or "phone" (app-style header with a
     hamburger drawer). Menu items come from config('shared-ui.navigation').
 --}}
-@props(['title' => null, 'padded' => true])
+@props(['title' => null, 'padded' => true, 'nav' => true])
 @php
     $layout = config('shared-ui.layout') === 'phone' ? 'phone' : 'desktop';
     $pageTitle = $title ?: config('app.name', 'Unique Workbench');

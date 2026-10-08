@@ -33,15 +33,20 @@
         @include('shared-ui::workbench.user-card')
         <div class="px-3 py-2 border-b border-white/10 empty:hidden">@include('shared-ui::workbench.organization')</div>
 
-        <nav class="flex-1 overflow-y-auto px-3 py-4 space-y-1">
-            @if (config('shared-ui.portal_url'))
-                <div class="pb-2 mb-2 border-b border-white/10">
-                    @include('shared-ui::workbench.portal-link')
-                </div>
-            @endif
-            @include('shared-ui::workbench.nav')
-            @stack('sidebar')
-        </nav>
+        @if ($nav)
+            <nav class="flex-1 overflow-y-auto px-3 py-4 space-y-1">
+                @if (config('shared-ui.portal_url'))
+                    <div class="pb-2 mb-2 border-b border-white/10">
+                        @include('shared-ui::workbench.portal-link')
+                    </div>
+                @endif
+                @include('shared-ui::workbench.nav')
+                @stack('sidebar')
+            </nav>
+        @else
+            {{-- No menu (nav false): the drawer keeps only the user's links --}}
+            <div class="flex-1"></div>
+        @endif
 
         <div class="shrink-0 px-3 pt-3 pb-4 border-t border-white/10 space-y-1">
             @include('shared-ui::workbench.help-link')

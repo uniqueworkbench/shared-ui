@@ -60,9 +60,12 @@ class SharedUiServiceProvider extends ServiceProvider
                     $this->app['router']->middleware(['api', 'feature-api', 'throttle:120,1'])
                         ->post('/api/features/directory-changed', DirectoryChangedController::class)
                         ->name('features.directory-changed');
-                    // The permissions the app declares, for the account app to sync
+                    // The permissions and contact types the app declares, for the account app to sync
                     $this->app['router']->middleware(['api', 'feature-api', 'throttle:120,1'])
-                        ->get('/api/features/permissions', fn () => ['permissions' => Workbench::declaredPermissions()])
+                        ->get('/api/features/permissions', fn () => [
+                            'permissions' => Workbench::declaredPermissions(),
+                            'contact_types' => Workbench::declaredContactTypes(),
+                        ])
                         ->name('features.permissions');
                 }
             });

@@ -2,7 +2,7 @@
     Desktop layout: a dark top bar across the page (logo, the organization, notifications, the user menu)
     over a dark left sidebar (Return to Workbench, menu, Help & Support, version) and the page on a light
     grey canvas. Below lg the sidebar becomes a drawer (hamburger in the top bar) that also holds the
-    user, their links and Log Out.
+    user, their links and Log Out. With nav false there's no sidebar or drawer (the user menu stays in the top bar).
 --}}
 <div x-data="{ drawer: false }" @keydown.escape.window="drawer = false" class="min-h-screen flex flex-col">
     <!-- Top bar -->
@@ -11,9 +11,11 @@
         <div id="main-nav-filler"></div>
         <div class="h-16 flex items-center">
             <div class="h-full flex items-center gap-2 px-3 sm:px-5 lg:w-60 lg:shrink-0 lg:px-6">
-                <button type="button" @click="drawer = true" class="lg:hidden p-2 text-zinc-200 hover:text-white" aria-label="{{ __('Open menu') }}">
-                    <i class="fa-solid fa-bars text-lg"></i>
-                </button>
+                @if ($nav)
+                    <button type="button" @click="drawer = true" class="lg:hidden p-2 text-zinc-200 hover:text-white" aria-label="{{ __('Open menu') }}">
+                        <i class="fa-solid fa-bars text-lg"></i>
+                    </button>
+                @endif
                 @include('shared-ui::workbench.brand', ['logoClass' => 'h-12'])
             </div>
 
@@ -42,6 +44,7 @@
     </header>
 
     <div class="flex-1 flex">
+        @if ($nav)
         <!-- Sidebar / drawer (the column keeps the dark background down long pages) -->
         <div class="lg:w-60 lg:shrink-0 lg:bg-zinc-900">
         <aside :class="drawer ? 'translate-x-0' : '-translate-x-full'"
@@ -87,6 +90,7 @@
 
         <!-- Drawer backdrop (small screens) -->
         <div x-show="drawer" x-cloak x-transition.opacity @click="drawer = false" class="fixed inset-0 z-30 bg-zinc-950/50 lg:hidden"></div>
+        @endif
 
         <div class="flex-1 min-w-0 flex flex-col">
             @stack('banners')

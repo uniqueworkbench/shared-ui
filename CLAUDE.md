@@ -28,7 +28,8 @@ infrastructure (hard-abend error tracking, the Feature API key check) used acros
     square icon + name, replace the Unique Workbench logo). No closures — apps
     cache config on deploy. Items with unknown routes are skipped.
   - Slots `header`, `breadcrumb`; props `title`, `padded` (false = pages bring
-    their own spacing); `@push('banners')` renders under the header. The
+    their own spacing), `nav` (false = no menu — desktop drops the sidebar and drawer,
+    phone keeps the drawer with only the user's links; e.g. the account app's Choose Organization); `@push('banners')` renders under the header. The
     LOCAL/BUILD/BETA badge shows next to the wordmark outside production, and
     an empty `#main-nav-filler` sits in the header for native app wrappers
     whose JS sizes it to the status bar.
@@ -145,22 +146,28 @@ infrastructure (hard-abend error tracking, the Feature API key check) used acros
   existing apps can adopt it piece by piece). The account app (the portal) doesn't use it.
   - `Workbench` (`workbench()` helper, a scoped binding): the signed-in user's
     organization context, kept in the session from the account app's `/api/user`
-    at SSO sign-in (`Workbench::fromSsoUser`): organization, role, relationship,
+    at SSO sign-in (`Workbench::fromSsoUser`): organization, the person's contact there (`contactId()` — what
+    apps key people by — and `contactType()`/`relationship()`, `isWorkforce()` from the account app's `is_workforce`,
+    `customerIds()`/`vendorIds()`), role,
     personas, units (`unitScopeIds()`/`canSeeUnit()`: their units and those below), visible locations, permissions (`can()`), app settings, and the
     user's and organization's pictures (`avatarUrl()` / `organizationAvatarUrl()`,
     which the top bar shows — the user's only when the app's user model has no `avatar_url`).
   - `EnsureWorkbenchContext` (alias `workbench`; apps append it to `web`): a
-    signed-in session without a context goes back through SSO.
+    signed-in session without a context — or with one from before it carried `contact_id` (`isCurrent()`) —
+    goes back through SSO.
   - `Concerns\BelongsToOrganization` / `Concerns\ScopedToLocations`: model traits
     that fill in and filter `organization_id`, and limit location data to the
     locations the user may see.
-  - `Directory`: the account app's `/api/customers|vendors|locations|members|personas|units`,
-    with a cached client-credentials token (needs the app's `config/sso.php`).
+  - `Directory`: the account app's `/api/customers|vendors|locations|people|members|personas|units`,
+    with a cached client-credentials token (needs the app's `config/sso.php`). `people()` / `person($contactId)` are
+    the organization's contacts, with or without a login (`id` = contact id, `user_id` = login or null);
+    `members()` only those who sign in, by user id (with `contact_id`).
   - `OrganizationMenu::current` for `shared-ui.organization` (name, avatar, role pill, Switch).
   - For apps with a `config/workbench.php` manifest: a gate per key in its
     `permissions`, `GET /api/features/permissions` (feature-api) — the declared
     permissions (`Workbench::declaredPermissions()`: key, label, description,
-    default) for the account app to sync — and `POST /api/features/directory-changed`
+    default) and contact types (`contact_types`, `Workbench::declaredContactTypes()`: key, label,
+    description, workforce) for the account app to sync — and `POST /api/features/directory-changed`
     (feature-api) to flush the directory cache when the account app says something changed.
 
 ## Rules

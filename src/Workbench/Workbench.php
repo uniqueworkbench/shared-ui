@@ -21,7 +21,8 @@ use Illuminate\Contracts\Session\Session;
  *   workbench()->inUnit('North')         units drive what they can see
  *   workbench()->unitScopeIds() / canSeeUnit()   their units and the units below them
  *   workbench()->seesAllLocations() / locationIds()   which locations' data to show (ScopedToLocations does)
- *   workbench()->relationship()          employee, contractor, customer or vendor
+ *   workbench()->contactId()             the person (their contact) — key people by it, as Directory::people() does
+ *   workbench()->contactType()           employee, contractor, customer, vendor, other, … (also relationship())
  *   workbench()->can('schedule.publish') this app's permissions (set per persona in the account app)
  *   workbench()->setting('key')          this app's settings (account app → App Settings)
  */
@@ -49,10 +50,18 @@ class Workbench
             // Pictures uploaded in the account app (absolute URLs; null = initials / building icon)
             'avatar_url' => $ssoUser['avatar_url'] ?? null,
             'organization_avatar_url' => $ssoUser['organization_avatar_url'] ?? null,
-            // Account apps from before relationships: everyone was an employee
-            'relationship' => $ssoUser['relationship'] ?? 'employee',
+            // Their contact in the organization — the account app's record of them, what this app keys
+            // people by (Directory::people() ids); null from account apps before contacts were people
+            'contact_id' => isset($ssoUser['contact_id']) ? (int) $ssoUser['contact_id'] : null,
+            // Their contact type (employee, contractor, customer, vendor, other, or an app's or the
+            // organization's own); account apps from before relationships: everyone was an employee
+            'relationship' => $ssoUser['contact_type'] ?? $ssoUser['relationship'] ?? 'employee',
+            // Whether that type is the organization's workforce (null from older account apps: by WORKFORCE)
+            'is_workforce' => isset($ssoUser['is_workforce']) ? (bool) $ssoUser['is_workforce'] : null,
             'customer_id' => $ssoUser['customer_id'] ?? null,
             'vendor_id' => $ssoUser['vendor_id'] ?? null,
+            'customer_ids' => array_values(array_map('intval', $ssoUser['customer_ids'] ?? array_filter([$ssoUser['customer_id'] ?? null]))),
+            'vendor_ids' => array_values(array_map('intval', $ssoUser['vendor_ids'] ?? array_filter([$ssoUser['vendor_id'] ?? null]))),
             'is_admin' => (bool) ($ssoUser['is_admin'] ?? false),
             'personas' => $ids($ssoUser['personas'] ?? []),
             'units' => $ids($ssoUser['units'] ?? []),
@@ -99,6 +108,12 @@ class Workbench
     public function has(): bool
     {
         return $this->organizationId() !== null;
+    }
+
+    /** Whether the context has everything fromSsoUser() keeps now (one from an older shared-ui is renewed through SSO) */
+    public function isCurrent(): bool
+    {
+        return array_key_exists('contact_id', $this->all());
     }
 
     public function all(): array
@@ -178,16 +193,43 @@ class Workbench
         return $this->isOwner() || $this->role() === 'manager';
     }
 
-    /** employee, contractor, customer or vendor */
+    /**
+     * The signed-in person's contact id — the account app's record of them in this organization.
+     * Key people by it (it's what Directory::people() returns as id), not by the login's sso id:
+     * contacts exist before they ever log in. Null from account apps before contacts were people.
+     */
+    public function contactId(): ?int
+    {
+        return $this->get('contact_id');
+    }
+
+    /** Their contact type: employee, contractor, customer, vendor, other, or an app's or the organization's own */
+    public function contactType(): string
+    {
+        return $this->relationship();
+    }
+
+    /** Their contact type (the name it had before contacts were people) */
     public function relationship(): string
     {
         return $this->get('relationship', 'employee');
     }
 
-    /** Employees and contractors: the organization's own people, not customers or vendors */
+    /** The organization's own people (a workforce contact type — employees and contractors by default), not customers or vendors */
     public function isWorkforce(): bool
     {
-        return in_array($this->relationship(), self::WORKFORCE, true);
+        return $this->get('is_workforce') ?? in_array($this->relationship(), self::WORKFORCE, true);
+    }
+
+    /** Every customer their contact is at (customerId() is the first, for a customer contact) */
+    public function customerIds(): array
+    {
+        return $this->get('customer_ids', []);
+    }
+
+    public function vendorIds(): array
+    {
+        return $this->get('vendor_ids', []);
     }
 
     /** The customer a customer member signs in as */
@@ -270,6 +312,30 @@ class Workbench
     public function can(string $key): bool
     {
         return $this->isOwner() || in_array($key, $this->get('permissions', []), true);
+    }
+
+    /**
+     * The contact types the app declares in config/workbench.php `contact_types`, offered to the
+     * organizations using it beside Workbench's (employee, contractor, customer, vendor, other):
+     * key => label, or key => [label, description, workforce] (workforce: the organization's own
+     * people — permission defaults, may be owners). Keys are lower-case letters, digits and _.
+     *
+     * @return array<int, array{key: string, label: string, description: ?string, workforce: bool}>
+     */
+    public static function declaredContactTypes(): array
+    {
+        $declared = [];
+        foreach (config('workbench.contact_types', []) as $key => $definition) {
+            $definition = is_array($definition) ? $definition : ['label' => $definition];
+            $declared[] = [
+                'key' => (string) $key,
+                'label' => (string) ($definition['label'] ?? $key),
+                'description' => $definition['description'] ?? null,
+                'workforce' => (bool) ($definition['workforce'] ?? false),
+            ];
+        }
+
+        return $declared;
     }
 
     /**
