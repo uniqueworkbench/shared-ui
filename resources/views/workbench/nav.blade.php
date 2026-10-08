@@ -7,6 +7,9 @@
       badge   optional [Class::class, 'staticMethod'] returning a count (shown when > 0)
     Items whose route doesn't exist are skipped.
 
+    A divider (['divider' => true]) is a thin line between sections. Dividers left at the start or
+    end, or next to another, once hidden items are skipped, aren't shown.
+
     A group is an item with children (label, icon, optional can, children: items as above,
     no route). It shows as a header that expands to its children — open by default while
     one of them is active — and is hidden when none of its children are visible. While
@@ -19,10 +22,24 @@
         && ! (isset($item['except']) && request()->routeIs(...(array) $item['except']));
     $badgeOf = fn (array $item) => isset($item['badge']) && is_callable($item['badge']) ? (int) call_user_func($item['badge']) : 0;
     $pill = 'inline-flex items-center justify-center min-w-[1.25rem] px-1.5 py-0.5 rounded-full text-xs font-semibold leading-none bg-bt_primary-600 text-white';
+    // What shows: links the user may follow, groups with such a child, and dividers between them
+    $shown = [];
+    foreach (config('shared-ui.navigation', []) as $item) {
+        $isDivider = ! empty($item['divider']);
+        if ($isDivider ? ($shown === [] || ! empty(end($shown)['divider']))
+            : (isset($item['children']) ? ! $visible($item) || ! array_filter($item['children'], $linkable) : ! $linkable($item))) {
+            continue;
+        }
+        $shown[] = $item;
+    }
+    if ($shown !== [] && ! empty(end($shown)['divider'])) {
+        array_pop($shown);
+    }
 @endphp
-@foreach (config('shared-ui.navigation', []) as $item)
-    @if (isset($item['children']))
-        @continue(! $visible($item))
+@foreach ($shown as $item)
+    @if (! empty($item['divider']))
+        <div role="separator" class="my-2 mx-3 border-t border-white/10"></div>
+    @elseif (isset($item['children']))
         @php
             $children = array_values(array_filter($item['children'], $linkable));
             $open = collect($children)->contains($isActive);
@@ -52,7 +69,6 @@
             </div>
         </div>
     @else
-        @continue(! $linkable($item))
         {{-- child passed explicitly: @include inherits this view's variables --}}
         @include('shared-ui::workbench.nav-item', ['item' => $item, 'child' => false, 'badgeCount' => null])
     @endif

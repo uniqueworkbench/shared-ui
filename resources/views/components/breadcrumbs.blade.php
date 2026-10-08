@@ -12,16 +12,21 @@
     // (window.URL: in an inline handler, a bare URL is document.URL, a string.)
     $lastHasUrl = count($breadcrumbs) > 0 && isset($breadcrumbs[count($breadcrumbs) - 1]['url']);
     $immediateParentIndex = $lastHasUrl ? null : count($breadcrumbs) - 2;
+    // The first crumb: config('shared-ui.breadcrumb_home') (['label' => …, 'url' => …]) when an app sets it
+    // for a section of its own (e.g. a module's home page), else Home (the dashboard)
+    $home = (array) config('shared-ui.breadcrumb_home', []);
+    $homeUrl = $home['url'] ?? route('dashboard');
+    $homeLabel = $home['label'] ?? 'Home';
     $backOnClick = "try { var r = document.referrer && new window.URL(document.referrer); if (r && r.origin === window.location.origin && r.pathname === new window.URL(this.href).pathname && window.history.length > 1) { event.preventDefault(); window.history.back(); } } catch (e) {}";
 @endphp
 @if(count($breadcrumbs) > 0)
 <nav class="flex mb-4" aria-label="Breadcrumb">
     <ol class="inline-flex items-center space-x-1 md:space-x-3">
         <li class="inline-flex items-center">
-            <a href="{{ route('dashboard') }}"
+            <a href="{{ $homeUrl }}"
                @if($immediateParentIndex === -1) onclick="{{ $backOnClick }}" @endif
                class="text-sm font-medium text-zinc-600 hover:text-bt_primary-600">
-                Home
+                {{ $homeLabel }}
             </a>
         </li>
         @foreach($breadcrumbs as $index => $breadcrumb)

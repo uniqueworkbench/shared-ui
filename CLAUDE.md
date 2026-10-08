@@ -21,7 +21,8 @@ infrastructure (hard-abend error tracking, the Feature API key check) used acros
     route, icon, optional `active`/`except` routeIs() patterns, `can` gate,
     `badge` `[Class::class, 'staticMethod']` count; an item with `children`
     and no route is a collapsible group header, open while a child is active;
-    while collapsed it shows its children's badges added up, expanded each child shows its own),
+    while collapsed it shows its children's badges added up, expanded each child shows its own;
+    `['divider' => true]` is a line between sections, dropped at the start/end or when doubled up by hidden items),
     `user_menu` (extra user
     links), `portal_url` (null hides Return to Workbench), `app_header_logo` / `app_icon` (paths
     under `public/`, the fallback when nothing was uploaded in the account app: the app's wide logo, else its
@@ -80,7 +81,8 @@ infrastructure (hard-abend error tracking, the Feature API key check) used acros
   start enabled. `window.uwDirtyForms.init(form)` for forms added later. Opt in only forms that edit existing values.
   - **Create pages' Cancel**: `<a data-back href="…">` goes back to the page the person came from (same site,
     another page), else follows its href.
-- **Breadcrumbs** (`<x-breadcrumbs>`): the link just above the current page goes *back* (keeping a filtered
+- **Breadcrumbs** (`<x-breadcrumbs>`): the first crumb is Home (the dashboard), or `config('shared-ui.breadcrumb_home')`
+  (`label`, `url`) when an app sets it for a section with its own home page. The link just above the current page goes *back* (keeping a filtered
   list's state) only when the previous page is that link; otherwise (e.g. after a form posted and redirected
   here) it's followed normally.
 - `resources/views/layouts/` — app, guest, navigation, public layouts (the

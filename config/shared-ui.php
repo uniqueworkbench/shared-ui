@@ -58,11 +58,16 @@ return [
     |              A group (label, icon, optional can, children: [items], no route)
     |              is a header that expands to its children; it starts open while
     |              a child is active and is hidden when no child is visible.
+    |              ['divider' => true] is a line between sections (not shown at
+    |              the start or end, or twice in a row, once hidden items go).
     | user_menu:   extra links in the user menu (label, route, icon), above
     |              Return to Workbench and Log Out.
     | portal_url:  where "Return to Workbench" (the top of the menu) goes — the
     |              Unique Workbench account app. null hides it (the account app
     |              is the portal).
+    | breadcrumb_home: the first breadcrumb, ['label' => …, 'url' => …]; null =
+    |              Home (the dashboard). Set per request for a section with a
+    |              home page of its own.
     | app_header_logo / app_icon: the app's own brand files (paths under public/,
     |              e.g. 'images/app_header_logo.png' — wide, light on dark, name
     |              included — and 'images/app_icon.png', square), used when no header
@@ -84,6 +89,8 @@ return [
     'user_menu' => [],
 
     'portal_url' => env('SSO_URL', 'https://account.uniqueworkbench.com'),
+
+    'breadcrumb_home' => null,
 
     'app_header_logo' => null,
 
