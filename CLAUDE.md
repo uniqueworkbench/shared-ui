@@ -30,7 +30,12 @@ infrastructure (hard-abend error tracking, the Feature API key check) used acros
     cache config on deploy. Items with unknown routes are skipped.
   - Slots `header`, `breadcrumb`; props `title`, `padded` (false = pages bring
     their own spacing), `nav` (false = no menu — desktop drops the sidebar and drawer,
-    phone keeps the drawer with only the user's links; e.g. the account app's Choose Organization); `@push('banners')` renders under the header. The
+    phone keeps the drawer with only the user's links; e.g. the account app's Choose Organization),
+    `vite` (the entries to load, default `resources/css/app.css` + `resources/js/app.js`), `inertia`
+    (true for an Inertia/React app whose slot is `@inertia` — e.g. Trigonon Report: the `<title>` is
+    marked for Inertia to change, and the page-loading overlay, confirm/prompt modals and dirty forms,
+    made for full page loads, are left out); `@push('head')` adds to `<head>` before the scripts
+    (`@routes`, `@viteReactRefresh`, `@inertiaHead`); `@push('banners')` renders under the header. The
     LOCAL/BUILD/BETA badge shows next to the wordmark outside production, and
     an empty `#main-nav-filler` sits in the header for native app wrappers
     whose JS sizes it to the status bar.
