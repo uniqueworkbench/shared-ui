@@ -7,6 +7,9 @@
       badge   optional [Class::class, 'staticMethod'] returning a count (shown when > 0)
       count   optional [Class::class, 'staticMethod'] returning how many things the page manages (shown muted
               after the label, 0 included — not an alert, unlike badge)
+      image   optional picture URL shown in the icon's place (e.g. an app's icon; keep `icon` as older versions' fallback)
+      highlight  optional true: the link always stands out (tinted, bold; red while it's the page) — e.g. a
+              section's own home over its menu
     Items whose route doesn't exist are skipped.
 
     A divider (['divider' => true]) is a thin line between sections. Dividers left at the start or

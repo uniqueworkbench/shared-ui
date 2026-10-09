@@ -20,7 +20,8 @@ infrastructure (hard-abend error tracking, the Feature API key check) used acros
     `help` — see the package config): `navigation` (label,
     route, icon, optional `active`/`except` routeIs() patterns, `can` gate,
     `badge` `[Class::class, 'staticMethod']` count (a red alert pill, shown when > 0); `count` the same kind of
-    callable for how many things the page manages (shown muted after the label, 0 included); an item with `children`
+    callable for how many things the page manages (shown muted after the label, 0 included); `image` (a URL) shows a picture in the icon's place (e.g. an app's icon); `highlight` (true) makes
+    a link always stand out — tinted and bold, red while it's the page — e.g. a section's home over its menu; an item with `children`
     and no route is a collapsible group header, open while a child is active;
     while collapsed it shows its children's badges added up, expanded each child shows its own;
     `['divider' => true]` is a line between sections, dropped at the start/end or when doubled up by hidden items;
