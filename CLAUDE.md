@@ -22,7 +22,11 @@ infrastructure (hard-abend error tracking, the Feature API key check) used acros
     `badge` `[Class::class, 'staticMethod']` count; an item with `children`
     and no route is a collapsible group header, open while a child is active;
     while collapsed it shows its children's badges added up, expanded each child shows its own;
-    `['divider' => true]` is a line between sections, dropped at the start/end or when doubled up by hidden items),
+    `['divider' => true]` is a line between sections, dropped at the start/end or when doubled up by hidden items;
+    `['heading' => 'Modules']` is a small label over the items after it, up to the next heading or divider, hidden
+    when none of them show — older shared-ui skips it, as an item without a route; a heading's `sortable` (a URL)
+    lets its items — each with a `sort_key` — be dragged into another order, saved by PUT `{order: [keys]}` there;
+    an item can have a `url` (any link, e.g. another app) instead of a `route` — active only by its `active`),
     `user_menu` (extra user
     links), `portal_url` (null hides Return to Workbench), `app_header_logo` / `app_icon` (paths
     under `public/`, the fallback when nothing was uploaded in the account app: the app's wide logo, else its
