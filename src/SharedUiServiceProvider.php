@@ -3,9 +3,11 @@
 namespace UniqueWorkbench\SharedUi;
 
 use Illuminate\Support\Facades\Blade;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Facades\Gate;
 use UniqueWorkbench\SharedUi\FeatureApi\VerifyFeatureApiKey;
+use UniqueWorkbench\SharedUi\Mail\WorkbenchMailTransport;
 use UniqueWorkbench\SharedUi\Workbench\Directory;
 use UniqueWorkbench\SharedUi\Workbench\DirectoryChangedController;
 use UniqueWorkbench\SharedUi\Workbench\EnsureWorkbenchContext;
@@ -41,6 +43,13 @@ class SharedUiServiceProvider extends ServiceProvider
                 $this->app['router']->middleware(['web', 'auth'])->get('/ui-kit', fn () => view('shared-ui::ui-kit'))->name('shared-ui.ui-kit');
             }
         });
+
+        // The `workbench` mail driver (MAIL_MAILER=workbench): email goes out through the account app's mail relay,
+        // so apps need no mail provider settings. Defined here so apps' own config/mail.php needn't list it.
+        Mail::extend('workbench', fn () => new WorkbenchMailTransport());
+        if (! config()->has('mail.mailers.workbench')) {
+            config(['mail.mailers.workbench' => ['transport' => 'workbench']]);
+        }
 
         // Guards routes the account app's App Features read (X-Api-Key = FEATURE_API_KEY)
         $this->app['router']->aliasMiddleware('feature-api', VerifyFeatureApiKey::class);

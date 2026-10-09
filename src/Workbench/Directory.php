@@ -141,36 +141,16 @@ class Directory
     private function request(string $resource, array $query, bool $retry = true): array
     {
         try {
-            return Http::withToken($this->token())->acceptJson()->timeout(10)
+            return Http::withToken(ClientToken::get('directory'))->acceptJson()->timeout(10)
                 ->get(config('sso.base_url') . '/api/' . $resource, $query)
                 ->throw()->json();
         } catch (RequestException $e) {
             if ($retry && $e->response->status() === 401) {
-                Cache::forget('workbench.directory.token');
+                ClientToken::forget('directory');
 
                 return $this->request($resource, $query, false);
             }
             throw $e;
         }
-    }
-
-    /** A client-credentials token for this app's SSO client, cached until shortly before it expires */
-    private function token(): string
-    {
-        if ($token = Cache::get('workbench.directory.token')) {
-            return $token;
-        }
-
-        $response = Http::asForm()->acceptJson()->timeout(10)->post(config('sso.base_url') . '/oauth/token', array_filter([
-            'grant_type' => 'client_credentials',
-            'client_id' => config('sso.client_id'),
-            'client_secret' => config('sso.client_secret'),
-            // A client limited to certain scopes must ask for this one; an unrestricted client needs none
-            'scope' => config('sso.scopes') ? 'directory' : null,
-        ]))->throw()->json();
-
-        Cache::put('workbench.directory.token', $response['access_token'], max(60, (int) ($response['expires_in'] ?? 3600) - 60));
-
-        return $response['access_token'];
     }
 }
