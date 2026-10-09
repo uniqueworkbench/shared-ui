@@ -5,6 +5,8 @@
       except  optional routeIs() pattern(s) that never count as active
       can     optional gate ability — the item only shows when Gate::allows() it
       badge   optional [Class::class, 'staticMethod'] returning a count (shown when > 0)
+      count   optional [Class::class, 'staticMethod'] returning how many things the page manages (shown muted
+              after the label, 0 included — not an alert, unlike badge)
     Items whose route doesn't exist are skipped.
 
     A divider (['divider' => true]) is a thin line between sections. Dividers left at the start or

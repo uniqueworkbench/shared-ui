@@ -1,4 +1,4 @@
-{{-- One menu link (see nav.blade.php). $item: label, route or url, icon, active, except, badge. $child: indented under a group.
+{{-- One menu link (see nav.blade.php). $item: label, route or url, icon, active, except, badge, count. $child: indented under a group.
      $badgeCount: the badge already counted (by the group), or null to count it here. --}}
 @php
     $child = $child ?? false;
@@ -6,6 +6,8 @@
         && request()->routeIs(...(array) ($item['active'] ?? $item['route']))
         && ! (isset($item['except']) && request()->routeIs(...(array) $item['except']));
     $badge = $badgeCount ?? (isset($item['badge']) && is_callable($item['badge']) ? (int) call_user_func($item['badge']) : 0);
+    // How many things the page manages (not an alert, unlike the badge): shown muted, 0 included
+    $count = isset($item['count']) && is_callable($item['count']) ? (int) call_user_func($item['count']) : null;
 @endphp
 <a href="{{ $item['url'] ?? route($item['route']) }}"
    @if ($active) aria-current="page" @endif
@@ -21,6 +23,9 @@
         <i class="{{ $item['icon'] ?? 'fa-solid fa-circle' }} w-4 text-center text-[0.9rem]"></i>
     @endunless
     <span class="flex-1 truncate">{{ __($item['label']) }}</span>
+    @if ($count !== null)
+        <span data-nav-count class="text-[0.7rem] tabular-nums {{ $active ? 'text-white/80' : 'text-zinc-400' }}">{{ number_format($count) }}</span>
+    @endif
     @if ($badge > 0)
         <span class="inline-flex items-center justify-center min-w-[1.25rem] px-1.5 py-0.5 rounded-full text-xs font-semibold leading-none {{ $active ? 'bg-white text-bt_primary-700' : 'bg-bt_primary-600 text-white' }}">{{ $badge > 99 ? '99+' : $badge }}</span>
     @endif
