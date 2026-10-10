@@ -6,8 +6,10 @@ use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Facades\Gate;
+use UniqueWorkbench\SharedUi\FeatureApi\VerifyConnectionToken;
 use UniqueWorkbench\SharedUi\FeatureApi\VerifyFeatureApiKey;
 use UniqueWorkbench\SharedUi\Mail\WorkbenchMailTransport;
+use UniqueWorkbench\SharedUi\Workbench\Connections;
 use UniqueWorkbench\SharedUi\Workbench\Directory;
 use UniqueWorkbench\SharedUi\Workbench\DirectoryChangedController;
 use UniqueWorkbench\SharedUi\Workbench\EnsureWorkbenchContext;
@@ -23,6 +25,8 @@ class SharedUiServiceProvider extends ServiceProvider
         require_once __DIR__ . '/Workbench/helpers.php';
         $this->app->scoped(Workbench::class, fn ($app) => new Workbench($app['session.store']));
         $this->app->singleton(Directory::class);
+        // Other apps' shared data, through connection tokens from the account app
+        $this->app->singleton(Connections::class);
     }
 
     public function boot(): void
@@ -53,6 +57,9 @@ class SharedUiServiceProvider extends ServiceProvider
 
         // Guards routes the account app's App Features read (X-Api-Key = FEATURE_API_KEY)
         $this->app['router']->aliasMiddleware('feature-api', VerifyFeatureApiKey::class);
+        // Guards what the app shares with other apps (config/workbench.php `provides`): the Feature API key
+        // or a connection token the account app issued for that share — `workbench.share:service-codes`
+        $this->app['router']->aliasMiddleware('workbench.share', VerifyConnectionToken::class);
         // Signed-in pages get the organization context, or go back through SSO (client apps add it to `web`)
         $this->app['router']->aliasMiddleware('workbench', EnsureWorkbenchContext::class);
 
@@ -69,11 +76,13 @@ class SharedUiServiceProvider extends ServiceProvider
                     $this->app['router']->middleware(['api', 'feature-api', 'throttle:120,1'])
                         ->post('/api/features/directory-changed', DirectoryChangedController::class)
                         ->name('features.directory-changed');
-                    // The permissions and contact types the app declares, for the account app to sync
+                    // The permissions, contact types, shares and uses the app declares, for the account app to sync
                     $this->app['router']->middleware(['api', 'feature-api', 'throttle:120,1'])
                         ->get('/api/features/permissions', fn () => [
                             'permissions' => Workbench::declaredPermissions(),
                             'contact_types' => Workbench::declaredContactTypes(),
+                            'provides' => Workbench::declaredShares(),
+                            'uses' => Workbench::declaredUses(),
                         ])
                         ->name('features.permissions');
                 }

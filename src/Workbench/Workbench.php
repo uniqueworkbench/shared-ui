@@ -3,6 +3,7 @@
 namespace UniqueWorkbench\SharedUi\Workbench;
 
 use Illuminate\Contracts\Session\Session;
+use Illuminate\Support\Facades\Log;
 
 /**
  * Who the signed-in user is in the organization they're working in — the
@@ -360,6 +361,72 @@ class Workbench
         }
 
         return $declared;
+    }
+
+    /**
+     * What the app shares with other apps, declared in config/workbench.php `provides`:
+     * key => [label, description, endpoint] — endpoint a path on this app under /api/features/,
+     * guarded by the `workbench.share:<key>` middleware. The account app syncs them; admins
+     * approve which apps may use each one. Keys are lower-case letters, digits and dashes;
+     * an entry with a bad key or endpoint is skipped (and logged).
+     *
+     * @return array<int, array{key: string, label: string, description: ?string, endpoint: string}>
+     */
+    public static function declaredShares(): array
+    {
+        $declared = [];
+        foreach (config('workbench.provides', []) as $key => $definition) {
+            $definition = is_array($definition) ? $definition : ['label' => $definition];
+            $endpoint = '/' . ltrim((string) ($definition['endpoint'] ?? ''), '/');
+            if (! self::validShareKey((string) $key) || ! str_starts_with($endpoint, '/api/features/') || $endpoint === '/api/features/') {
+                Log::warning("config/workbench.php provides: skipped \"{$key}\" — keys are lower-case letters, digits and dashes, and endpoints start with /api/features/.");
+
+                continue;
+            }
+            $declared[] = [
+                'key' => (string) $key,
+                'label' => (string) ($definition['label'] ?? $key),
+                'description' => $definition['description'] ?? null,
+                'endpoint' => $endpoint,
+            ];
+        }
+
+        return $declared;
+    }
+
+    /**
+     * What the app reads from other apps, declared in config/workbench.php `uses`:
+     * "<provider app key>.<share key>" => [reason] (or just the reason). The account app syncs
+     * them as requests an admin approves; Connections::get() reads them once approved. An entry
+     * with a bad key is skipped (and logged).
+     *
+     * @return array<int, array{provider: string, share: string, reason: ?string}>
+     */
+    public static function declaredUses(): array
+    {
+        $declared = [];
+        foreach (config('workbench.uses', []) as $key => $definition) {
+            $definition = is_array($definition) ? $definition : ['reason' => $definition];
+            [$provider, $share] = array_pad(explode('.', (string) $key, 2), 2, '');
+            if (! self::validShareKey($provider) || ! self::validShareKey($share)) {
+                Log::warning("config/workbench.php uses: skipped \"{$key}\" — use \"<provider app key>.<share key>\".");
+
+                continue;
+            }
+            $declared[] = [
+                'provider' => $provider,
+                'share' => $share,
+                'reason' => $definition['reason'] ?? null,
+            ];
+        }
+
+        return $declared;
+    }
+
+    /** An app key or share key: lower-case letters, digits and dashes, starting with a letter */
+    public static function validShareKey(string $key): bool
+    {
+        return (bool) preg_match('/^[a-z][a-z0-9-]{0,63}$/', $key);
     }
 
     /** This app's setting for the user (account app → Applications → App Settings) */
