@@ -3,9 +3,21 @@
     "description": "Shared UI components and layouts for Unique Workbench apps",
     "type": "library",
     "version": "1.5.7",
+    "require": {
+        "firebase/php-jwt": "^6.10 || ^7.0"
+    },
+    "require-dev": {
+        "orchestra/testbench": "^10.0",
+        "phpunit/phpunit": "^11.5"
+    },
     "autoload": {
         "psr-4": {
             "UniqueWorkbench\\SharedUi\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "UniqueWorkbench\\SharedUi\\Tests\\": "tests/"
         }
     },
     "extra": {
@@ -14,5 +26,8 @@
                 "UniqueWorkbench\\SharedUi\\SharedUiServiceProvider"
             ]
         }
+    },
+    "scripts": {
+        "test": "phpunit"
     }
 }

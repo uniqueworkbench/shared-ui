@@ -21,12 +21,18 @@ class VerifyFeatureApiKey
 {
     public function handle(Request $request, Closure $next): Response
     {
-        $expected = (string) config('shared-ui.feature_api_key');
-
-        if ($expected === '' || ! hash_equals($expected, (string) $request->header('X-Api-Key'))) {
+        if (! self::valid($request)) {
             return response()->json(['message' => 'Invalid API key.'], 401);
         }
 
         return $next($request);
+    }
+
+    /** Whether the request carries this app's Feature API key */
+    public static function valid(Request $request): bool
+    {
+        $expected = (string) config('shared-ui.feature_api_key');
+
+        return $expected !== '' && hash_equals($expected, (string) $request->header('X-Api-Key'));
     }
 }

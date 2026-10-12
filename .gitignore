@@ -27,3 +27,4 @@ Thumbs.db
 *.sh
 # ...except the release script (it tags vX.Y.Z, which is how apps get new versions)
 !/push.sh
+/composer.lock

@@ -188,14 +188,39 @@ infrastructure (hard-abend error tracking, the Feature API key check) used acros
     `permissions`, `GET /api/features/permissions` (feature-api) — the declared
     permissions (`Workbench::declaredPermissions()`: key, label, description,
     default) and contact types (`contact_types`, `Workbench::declaredContactTypes()`: key, label,
-    description, workforce) for the account app to sync — and `POST /api/features/directory-changed`
+    description, workforce), shares (`provides`, `Workbench::declaredShares()`) and uses (`uses`,
+    `Workbench::declaredUses()`) for the account app to sync — and `POST /api/features/directory-changed`
     (feature-api) to flush the directory cache when the account app says something changed.
+  - **App Connections** — apps share data with each other through the account app (the broker), never
+    holding each other's keys:
+    - Declared in `config/workbench.php`: `provides` — `share-key => [label, description, endpoint]`
+      (endpoint a path under `/api/features/`), and `uses` — `"<provider app key>.<share key>" => [reason]`.
+      Keys: `/^[a-z][a-z0-9-]{0,63}$/`; bad entries are skipped and logged. Both go out as `provides` / `uses`
+      on `/api/features/permissions`, so the account app's **Sync from app** records them; an admin approves
+      each use there (Admin → Connections).
+    - **Subscriber**: `Connections` (singleton) — `get($provider, $share, $query = [], $organizationId = null)`
+      returns the provider's JSON or null, `available(...)`. It asks the account app for a 10-minute
+      connection token (`POST /api/connections/token`, client credentials with scope `connections` —
+      add `connections` to `SSO_SCOPES` for a restricted client), cached until shortly before it expires,
+      then calls the provider directly (`Authorization: Bearer`, `organization_id` added). Answers are cached
+      `config('workbench.connections_cache_seconds', 300)`; the last good one is kept a week and returned
+      when the provider or the account app fails (a warning is logged). 401 from the account app → new
+      client token, once; 401 from the provider → new connection token, once; 403/404 from the account app
+      (not approved, unknown share) → null, remembered 60 s. No SSO configured → null, nothing called.
+    - **Provider**: route middleware `workbench.share:<share key>` (`FeatureApi\VerifyConnectionToken`):
+      accepts this app's Feature API key (`X-Api-Key`, the account app's App Features) or a connection
+      token — an RS256 JWT checked with the account app's public key (`GET /api/connections/public-key`,
+      cached a day, fetched again once on a bad signature in case it rotated): `iss` = `sso.base_url`,
+      `aud` = `sso.client_id`, `share` = the middleware's, `org` = the request's `organization_id`, `exp`
+      (30 s leeway). The caller is on the request as `workbench.connection` (`app`, `share`,
+      `organization_id`, `jti`); anything else is a 401. Needs `firebase/php-jwt` (^6.10 or ^7).
 
 ## Rules
 - No app-*specific* logic here — logic must be generic enough to apply to every
   consuming app (not "how account.uniqueworkbench.com handles X")
 - No imports in tailwind.config.js (apps handle their own node_modules)
 - Changes here affect ALL apps — test in account/ after any change
+- Tests: `composer test` (Orchestra Testbench, in-memory SQLite, `tests/`); the package has no lock file
 - After view/CSS changes, apps may need: php artisan view:clear
 - After backend changes (migrations, config), apps need: composer update
   uniqueworkbench/shared-ui && php artisan migrate
