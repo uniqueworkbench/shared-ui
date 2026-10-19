@@ -65,9 +65,12 @@ class SharedUiServiceProvider extends ServiceProvider
 
         // Client apps built on the workbench (they have a config/workbench.php manifest)
         if (config()->has('workbench.audiences')) {
-            // A gate per app permission, e.g. @can('schedule.publish')
-            foreach (array_keys(config('workbench.permissions', [])) as $permission) {
-                Gate::define($permission, fn () => workbench()->can($permission));
+            // A gate per app permission, e.g. @can('schedule.publish') — an `everywhere_only` one
+            // only for people given it in every organization (Workbench::grantedEverywhere)
+            foreach (config('workbench.permissions', []) as $permission => $definition) {
+                Gate::define($permission, is_array($definition) && ($definition['everywhere_only'] ?? false)
+                    ? fn () => workbench()->grantedEverywhere($permission)
+                    : fn () => workbench()->can($permission));
             }
 
             $this->app->booted(function () {

@@ -82,8 +82,10 @@ infrastructure (hard-abend error tracking, the Feature API key check) used acros
     `x-data-table.td`), edge to edge in an `<x-card :padded="false">`. Keep to a few columns: put flags in
     pills (e.g. under the name), stack related values in one cell (email over phone), and move one-row
     settings into the row's ⋯ menu (`x-data-table.actions` of `x-data-table.action`: a link, or a form button
-    with `action`/`method`, `confirm`, `disabled` reason, `danger`; the menu is teleported to `<body>` so a
-    scrolling table never cuts it off). A `hide` (md/lg/xl/2xl) on a column's `th` and its `td`s drops it
+    with `action`/`method`, `params` — extra hidden fields, e.g. `['applications[]' => $id, 'action' => 'test']`
+    to run one row through a bulk endpoint — `confirm`, `disabled` reason, `danger`; the menu is teleported to
+    `<body>` so a scrolling table never cuts it off, which also lets its forms sit inside a row that is itself in a
+    form, and keeps the row's Alpine scope). A `hide` (md/lg/xl/2xl) on a column's `th` and its `td`s drops it
     below that width. On phones (below `sm`) each row is a card: the `primary` cell is its title, the others
     show their `label`, the `actions` cell sits top right. Still too wide, it scrolls sideways with a shadow
     on the cut-off edge; `scroll` caps it at the screen's height so the header stays put and the scrollbar
@@ -184,7 +186,7 @@ infrastructure (hard-abend error tracking, the Feature API key check) used acros
     at SSO sign-in (`Workbench::fromSsoUser`): organization, the person's contact there (`contactId()` — what
     apps key people by — and `contactType()`/`relationship()`, `isWorkforce()` from the account app's `is_workforce`,
     `customerIds()`/`vendorIds()`), role,
-    personas, units (`unitScopeIds()`/`canSeeUnit()`: their units and those below), visible locations, permissions (`can()`; `canEverywhere()`: ones a Super Admin gave them in every organization — the account app's `everywhere_permissions` — or they're a Super Admin), app settings, and the
+    personas, units (`unitScopeIds()`/`canSeeUnit()`: their units and those below), visible locations, permissions (`can()`; `canEverywhere()`: ones a Super Admin gave them in every organization — the account app's `everywhere_permissions` — or they're a Super Admin; `grantedEverywhere()`: only the ones given them in every organization, Super Admin or not — for permissions declared `'everywhere_only' => true` in config/workbench.php, e.g. the app's own Admin Mode, which organizations' owners never get and whose gate uses it), app settings, and the
     user's and organization's pictures (`avatarUrl()` / `organizationAvatarUrl()`,
     which the top bar shows — the user's only when the app's user model has no `avatar_url`).
   - `EnsureWorkbenchContext` (alias `workbench`; apps append it to `web`): a

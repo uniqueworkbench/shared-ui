@@ -331,6 +331,17 @@ class Workbench
     }
 
     /**
+     * Whether the user was given this app's permission $key in every organization (Admin → Users →
+     * Every Organization in the account app) — strictly: being a Super Admin or an owner doesn't
+     * count. For permissions declared `everywhere_only` (config/workbench.php), such as the app's
+     * own Admin Mode, so who has it is decided per person.
+     */
+    public function grantedEverywhere(string $key): bool
+    {
+        return in_array($key, $this->get('everywhere_permissions', []), true);
+    }
+
+    /**
      * The contact types the app declares in config/workbench.php `contact_types`, offered to the
      * organizations using it beside Workbench's (employee, contractor, customer, vendor, other):
      * key => label, or key => [label, description, workforce] (workforce: the organization's own
@@ -372,6 +383,9 @@ class Workbench
                 'label' => (string) ($definition['label'] ?? $key),
                 'description' => $definition['description'] ?? null,
                 'default' => (bool) ($definition['default'] ?? false),
+                // Granted only per person in every organization (Admin → Users → Every Organization), never
+                // by an organization's owners or personas — e.g. the app's own Admin Mode (grantedEverywhere)
+                'everywhere_only' => (bool) ($definition['everywhere_only'] ?? false),
             ];
         }
 
