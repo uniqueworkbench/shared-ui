@@ -25,6 +25,7 @@ use Illuminate\Support\Facades\Log;
  *   workbench()->contactId()             the person (their contact) — key people by it, as Directory::people() does
  *   workbench()->contactType()           employee, contractor, customer, vendor, other, … (also relationship())
  *   workbench()->can('schedule.publish') this app's permissions (set per persona in the account app)
+ *   workbench()->canEverywhere('projects.see_all')   ones a Super Admin gave them in every organization
  *   workbench()->setting('key')          this app's settings (account app → App Settings)
  */
 class Workbench
@@ -75,6 +76,8 @@ class Workbench
             'organizations' => $ssoUser['organizations'] ?? [],
             // What this app lets them do (the account app's app permissions for this app)
             'permissions' => array_values($ssoUser['permissions'] ?? []),
+            // The ones a Super Admin gave them in every organization (canEverywhere); older account apps don't send them
+            'everywhere_permissions' => array_values($ssoUser['everywhere_permissions'] ?? []),
             'app_settings' => (array) ($ssoUser['app_settings'] ?? []),
             // This app's brand, uploaded in the account app (absolute URLs; null = this app's own files)
             'app_branding' => array_map(
@@ -313,6 +316,18 @@ class Workbench
     public function can(string $key): bool
     {
         return $this->isOwner() || in_array($key, $this->get('permissions', []), true);
+    }
+
+    /**
+     * Whether the user has this app's permission $key in every organization, not only this
+     * one: given by a Super Admin in the account app (Admin → Users → user → Every
+     * Organization) — or they're a Super Admin. Owners don't get it from being owners here.
+     * What it opens up beyond this organization is the app's call (e.g. every
+     * organization's records).
+     */
+    public function canEverywhere(string $key): bool
+    {
+        return $this->isAdmin() || in_array($key, $this->get('everywhere_permissions', []), true);
     }
 
     /**
