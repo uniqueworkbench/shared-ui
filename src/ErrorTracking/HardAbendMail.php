@@ -18,7 +18,11 @@ class HardAbendMail extends Mailable
 
     public function envelope(): Envelope
     {
-        $status = $this->errorLog->status_code ? "{$this->errorLog->status_code} " : '';
+        $status = match (true) {
+            $this->errorLog->handled => 'Handled ',
+            (bool) $this->errorLog->status_code => "{$this->errorLog->status_code} ",
+            default => '',
+        };
 
         return new Envelope(
             subject: "[{$this->errorLog->app}/{$this->errorLog->environment}] {$status}{$this->errorLog->exception_class}",

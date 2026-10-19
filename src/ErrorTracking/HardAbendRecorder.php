@@ -39,6 +39,11 @@ use Throwable;
  * non-production environments (there it 404s instead — see ServeFile's
  * isProduction check — which is why this tends to show up only on dev/stage).
  * An authenticated user hitting it is still recorded/emailed as a real 403.
+ *
+ * reportable() also fires for exceptions the app caught itself and passed to
+ * report() (e.g. a background lookup that falls back when another app is slow)
+ * — the request carried on, so those are recorded as `handled` with no status
+ * code rather than as a 500 that never happened.
  */
 class HardAbendRecorder
 {
@@ -47,7 +52,7 @@ class HardAbendRecorder
         $recordedIds = [];
 
         $exceptions->reportable(function (Throwable $e) use (&$recordedIds) {
-            $errorLog = static::record($e, request());
+            $errorLog = static::record($e, request(), static::reportedByApp());
 
             if ($errorLog) {
                 $recordedIds[spl_object_id($e)] = $errorLog->id;
@@ -145,14 +150,34 @@ class HardAbendRecorder
         return str_starts_with((string) $request->route()?->getName(), 'storage.');
     }
 
-    public static function record(Throwable $e, ?Request $request = null): ?ErrorLog
+    /**
+     * True when the exception reached reportable() through Laravel's global
+     * report() helper (also what rescue() and report_if() use) — i.e. the app
+     * caught it and chose to report it. Uncaught exceptions arrive from the
+     * HTTP/console kernels and the queue worker calling the handler directly.
+     */
+    protected static function reportedByApp(): bool
+    {
+        foreach (debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 30) as $frame) {
+            if (($frame['function'] ?? null) === 'report' && ! isset($frame['class'])) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    public static function record(Throwable $e, ?Request $request = null, bool $handled = false): ?ErrorLog
     {
         try {
             $errorLog = ErrorLog::create([
                 'app' => config('app.name'),
                 'environment' => app()->environment(),
                 'exception_class' => get_class($e),
-                'status_code' => $e instanceof HttpExceptionInterface ? $e->getStatusCode() : 500,
+                'status_code' => $handled ? null : ($e instanceof HttpExceptionInterface ? $e->getStatusCode() : 500),
+                // Only written when set (the column defaults to false), so real
+                // crashes still record in an app that hasn't run the migration yet
+                ...($handled ? ['handled' => true] : []),
                 'message' => Str::limit($e->getMessage(), 2000),
                 // string(255) columns: a long URL (e.g. an OAuth callback's code + state) must not stop the recording
                 'file' => $e->getFile() ? mb_substr($e->getFile(), 0, 255) : null,

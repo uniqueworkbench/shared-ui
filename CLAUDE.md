@@ -123,6 +123,10 @@ infrastructure (hard-abend error tracking, the Feature API key check) used acros
   - **500** (genuine unhandled crash): recorded + emailed (as before), custom
     page shown — except when `APP_DEBUG=true`, where Laravel's normal debug
     trace still shows so local dev isn't hampered.
+  - **Handled** (the app caught an exception and passed it to `report()` /
+    `rescue()`, then carried on): recorded with `handled = true` and no
+    status code, emailed as "Handled error" — not a 500. Detected by the
+    global `report()` helper being on the call stack.
   - **403**: recorded + emailed (Laravel's default reportable() hook never
     sees 403/404/etc. — they're Symfony `HttpException` subclasses, which are
     in `Handler::$internalDontReport` — so this is recorded explicitly in the

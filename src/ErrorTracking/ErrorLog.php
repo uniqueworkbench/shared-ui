@@ -14,6 +14,7 @@ class ErrorLog extends Model
     {
         return [
             'status_code' => 'integer',
+            'handled' => 'boolean',
             'notified_at' => 'datetime',
         ];
     }

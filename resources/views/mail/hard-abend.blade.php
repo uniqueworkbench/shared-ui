@@ -1,5 +1,11 @@
 <x-mail::message>
+@if ($errorLog->handled)
+# Handled error in {{ $errorLog->app }} ({{ $errorLog->environment }})
+
+The app caught this and carried on — the request did not fail.
+@else
 # {{ $errorLog->status_code ?? 500 }} error in {{ $errorLog->app }} ({{ $errorLog->environment }})
+@endif
 
 **{{ $errorLog->exception_class }}**
 
