@@ -93,19 +93,30 @@
                 </div>
             </div>
         </x-card>
+        {{-- A few columns; flags as pills; per-row settings in the ⋯ menu; a card per row on phones --}}
         <x-card title="A table" :padded="false">
-            <table class="min-w-full divide-y divide-zinc-200 text-sm">
-                <thead class="bg-zinc-50">
-                    <tr>
-                        <th class="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wide text-zinc-500">Location</th>
-                        <th class="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wide text-zinc-500">Status</th>
-                    </tr>
-                </thead>
-                <tbody class="divide-y divide-zinc-200">
-                    <tr><td class="px-6 py-4 font-medium text-zinc-900">Lakeside Pool</td><td class="px-6 py-4"><x-pill color="green">Active</x-pill></td></tr>
-                    <tr><td class="px-6 py-4 font-medium text-zinc-900">Hilltop Club</td><td class="px-6 py-4"><x-pill color="gray">Inactive</x-pill></td></tr>
-                </tbody>
-            </table>
+            <x-data-table>
+                <x-slot name="head">
+                    <x-data-table.th>Location</x-data-table.th>
+                    <x-data-table.th hide="xl">Manager</x-data-table.th>
+                    <x-data-table.th>Status</x-data-table.th>
+                    <x-data-table.th class="w-0"><span class="sr-only">Actions</span></x-data-table.th>
+                </x-slot>
+                @foreach ([['Lakeside Pool', 'Ann Lee', true], ['Hilltop Club', 'Olga Owner', false]] as [$location, $manager, $active])
+                    <x-data-table.row>
+                        <x-data-table.td primary>{{ $location }}</x-data-table.td>
+                        <x-data-table.td hide="xl" label="Manager">{{ $manager }}</x-data-table.td>
+                        <x-data-table.td label="Status"><x-pill :color="$active ? 'green' : 'gray'">{{ $active ? 'Active' : 'Inactive' }}</x-pill></x-data-table.td>
+                        <x-data-table.td actions>
+                            <x-data-table.actions :label="'Actions for ' . $location">
+                                <x-data-table.action icon="fa-regular fa-pen-to-square" href="#">Edit</x-data-table.action>
+                                <x-data-table.action icon="fa-solid fa-ban" disabled="Has open schedules">Set inactive</x-data-table.action>
+                                <x-data-table.action icon="fa-solid fa-trash" action="#" confirm="Remove {{ $location }}?" danger>Remove</x-data-table.action>
+                            </x-data-table.actions>
+                        </x-data-table.td>
+                    </x-data-table.row>
+                @endforeach
+            </x-data-table>
         </x-card>
     </div>
 </x-workbench-layout>

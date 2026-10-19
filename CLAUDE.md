@@ -78,6 +78,16 @@ infrastructure (hard-abend error tracking, the Feature API key check) used acros
     `x-pill`, `x-info-box`, and buttons: `x-primary-button` (filled red), `x-outline-button` (red
     outline, `href` makes it a link), `x-secondary-button` (white, grey border), `x-danger-button`
     (dark red). Buttons are sentence case, `text-sm font-semibold`, never uppercase.
+  - **List tables**: `<x-data-table>` (`head` slot of `x-data-table.th`, rows of `x-data-table.row` /
+    `x-data-table.td`), edge to edge in an `<x-card :padded="false">`. Keep to a few columns: put flags in
+    pills (e.g. under the name), stack related values in one cell (email over phone), and move one-row
+    settings into the row's ⋯ menu (`x-data-table.actions` of `x-data-table.action`: a link, or a form button
+    with `action`/`method`, `confirm`, `disabled` reason, `danger`; the menu is teleported to `<body>` so a
+    scrolling table never cuts it off). A `hide` (md/lg/xl/2xl) on a column's `th` and its `td`s drops it
+    below that width. On phones (below `sm`) each row is a card: the `primary` cell is its title, the others
+    show their `label`, the `actions` cell sits top right. Still too wide, it scrolls sideways with a shadow
+    on the cut-off edge; `scroll` caps it at the screen's height so the header stays put and the scrollbar
+    stays in view; `sticky-first` pins the first column. Needs Alpine ≥ 3.9 (`x-teleport`).
 - **Dirty forms** (`resources/views/workbench/dirty-forms.blade.php`, included by `<x-workbench-layout>`):
   a `<form data-dirty-form>` starts with its Save (submit) buttons disabled; any change enables them (changing
   it back by hand disables them again). Its **Cancel is always enabled** and returns to the previous state: on a
