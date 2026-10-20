@@ -206,7 +206,11 @@ infrastructure (hard-abend error tracking, the Feature API key check) used acros
     default) and contact types (`contact_types`, `Workbench::declaredContactTypes()`: key, label,
     description, workforce), shares (`provides`, `Workbench::declaredShares()`) and uses (`uses`,
     `Workbench::declaredUses()`) for the account app to sync — and `POST /api/features/directory-changed`
-    (feature-api) to flush the directory cache when the account app says something changed.
+    (feature-api) to flush the directory cache when the account app says something changed, and
+    `POST /api/features/user-removed` (feature-api, `{user_id}` = the account app's user id) — a login was
+    deleted or removed, so `SignOutRemovedUser` signs them out: the users with that `sso_id` lose their
+    sessions (database driver only), remember token and `sso_*` tokens; the row stays. Apps without the
+    manifest (Measure) register `UserRemovedController` on their own route.
   - **App Connections** — apps share data with each other through the account app (the broker), never
     holding each other's keys:
     - Declared in `config/workbench.php`: `provides` — `share-key => [label, description, endpoint]`

@@ -13,6 +13,7 @@ use UniqueWorkbench\SharedUi\Workbench\Connections;
 use UniqueWorkbench\SharedUi\Workbench\Directory;
 use UniqueWorkbench\SharedUi\Workbench\DirectoryChangedController;
 use UniqueWorkbench\SharedUi\Workbench\EnsureWorkbenchContext;
+use UniqueWorkbench\SharedUi\Workbench\UserRemovedController;
 use UniqueWorkbench\SharedUi\Workbench\Workbench;
 
 class SharedUiServiceProvider extends ServiceProvider
@@ -79,6 +80,10 @@ class SharedUiServiceProvider extends ServiceProvider
                     $this->app['router']->middleware(['api', 'feature-api', 'throttle:120,1'])
                         ->post('/api/features/directory-changed', DirectoryChangedController::class)
                         ->name('features.directory-changed');
+                    // The account app says a login is gone: sign that person out here
+                    $this->app['router']->middleware(['api', 'feature-api', 'throttle:120,1'])
+                        ->post('/api/features/user-removed', UserRemovedController::class)
+                        ->name('features.user-removed');
                     // The permissions, contact types, shares and uses the app declares, for the account app to sync
                     $this->app['router']->middleware(['api', 'feature-api', 'throttle:120,1'])
                         ->get('/api/features/permissions', fn () => [
