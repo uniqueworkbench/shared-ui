@@ -19,6 +19,8 @@
     heading or divider. It isn't shown when none of those items are. With `sortable` (a URL), its items
     can be dragged into another order, each saved by PUT to that URL as JSON {order: [their sort_key]}
     (items under it need a `sort_key`; drag and drop needs a mouse — phones only follow the links).
+    With `collapsible` (true), the heading is a button that shows and hides its items — collapsed by
+    default, open while one of them is active.
 
     A group is an item with children (label, icon, optional can, children: items as above,
     no route). It shows as a header that expands to its children — open by default while
@@ -57,14 +59,41 @@
         array_pop($shown);
     }
 @endphp
-@php $sorting = false; @endphp
-@foreach ($shown as $item)
-    @if ($sorting && (isset($item['heading']) || ! empty($item['divider'])))
-        </div>
-        @php $sorting = false; @endphp
+@php
+    $sorting = false;
+    $sectionDivs = 0; // wrappers a collapsible or sortable heading opened, closed at the next heading or divider
+@endphp
+@foreach ($shown as $i => $item)
+    @if ($sectionDivs > 0 && (isset($item['heading']) || ! empty($item['divider'])))
+        {!! str_repeat('</div>', $sectionDivs) !!}
+        @php
+            $sorting = false;
+            $sectionDivs = 0;
+        @endphp
     @endif
     @if (isset($item['heading']))
-        <div role="heading" aria-level="2" data-nav-heading class="mt-4 mb-1 px-3 text-[0.68rem] font-semibold uppercase tracking-wider text-zinc-400">{{ __($item['heading']) }}</div>
+        @if (! empty($item['collapsible']))
+            @php
+                // Open while one of its items (or a group's child) is the page
+                $sectionOpen = false;
+                for ($j = $i + 1; isset($shown[$j]) && ! isset($shown[$j]['heading']) && empty($shown[$j]['divider']); $j++) {
+                    $sectionOpen = $sectionOpen || $isActive($shown[$j])
+                        || collect(array_filter($shown[$j]['children'] ?? [], $linkable))->contains($isActive);
+                }
+                $sectionDivs = 2;
+            @endphp
+            <div x-data="{ open: @js($sectionOpen) }" data-nav-section>
+                <div role="heading" aria-level="2" data-nav-heading class="mt-4 mb-1">
+                    <button type="button" @click="open = ! open" :aria-expanded="open.toString()" aria-expanded="{{ $sectionOpen ? 'true' : 'false' }}"
+                            class="w-full flex items-center gap-2 px-3 text-[0.68rem] font-semibold uppercase tracking-wider text-zinc-400 transition hover:text-zinc-200">
+                        <span class="flex-1 truncate text-left">{{ __($item['heading']) }}</span>
+                        <i class="fa-solid text-[0.6rem] {{ $sectionOpen ? 'fa-chevron-up' : 'fa-chevron-down' }}" :class="open ? 'fa-chevron-up' : 'fa-chevron-down'"></i>
+                    </button>
+                </div>
+                <div x-show="open" @unless ($sectionOpen) x-cloak @endunless class="space-y-1">
+        @else
+            <div role="heading" aria-level="2" data-nav-heading class="mt-4 mb-1 px-3 text-[0.68rem] font-semibold uppercase tracking-wider text-zinc-400">{{ __($item['heading']) }}</div>
+        @endif
         @if (! empty($item['sortable']))
             {{-- Its items drag into another order (a mouse; HTML drag and drop), saved at once --}}
             <div class="space-y-1" data-nav-sortable="{{ $item['sortable'] }}"
@@ -89,7 +118,10 @@
                  }"
                  @dragstart="dragging = $event.target.closest('[data-sort-key]'); dragging?.classList.add('opacity-50'); $event.dataTransfer.effectAllowed = 'move'"
                  @dragover.prevent="over($event)" @drop.prevent @dragend="drop()">
-            @php $sorting = true; @endphp
+            @php
+                $sorting = true;
+                $sectionDivs++;
+            @endphp
         @endif
     @elseif (! empty($item['divider']))
         <div role="separator" class="my-2 mx-3 border-t border-white/10"></div>
@@ -131,6 +163,4 @@
         @include('shared-ui::workbench.nav-item', ['item' => $item, 'child' => false, 'badgeCount' => null])
     @endif
 @endforeach
-@if ($sorting)
-    </div>
-@endif
+{!! str_repeat('</div>', $sectionDivs) !!}

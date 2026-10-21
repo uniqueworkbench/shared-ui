@@ -28,6 +28,8 @@ infrastructure (hard-abend error tracking, the Feature API key check) used acros
     `['heading' => 'Modules']` is a small label over the items after it, up to the next heading or divider, hidden
     when none of them show — older shared-ui skips it, as an item without a route; a heading's `sortable` (a URL)
     lets its items — each with a `sort_key` — be dragged into another order, saved by PUT `{order: [keys]}` there;
+    a heading's `collapsible` (true) makes it a button that shows/hides its items — collapsed by default, open while
+    one of them is active (older shared-ui shows it as a plain heading);
     an item can have a `url` (any link, e.g. another app) instead of a `route` — active only by its `active`),
     `user_menu` (extra user
     links), `portal_url` (null hides Return to Workbench), `app_header_logo` / `app_icon` (paths
