@@ -43,7 +43,7 @@ infrastructure (hard-abend error tracking, the Feature API key check) used acros
     (true for an Inertia/React app whose slot is `@inertia` — e.g. Trigonon Report: the `<title>` is
     marked for Inertia to change, and the page-loading overlay, confirm/prompt modals and dirty forms,
     made for full page loads, are left out); `@push('head')` adds to `<head>` before the scripts
-    (`@routes`, `@viteReactRefresh`, `@inertiaHead`); `@push('banners')` renders under the header. The
+    (`@routes`, `@viteReactRefresh`, `@inertiaHead`); `@push('banners')` renders under the header; `@push('topbar')` (desktop layout only) goes in the top bar right after the organization (e.g. the account app's search). The
     LOCAL/BUILD/BETA badge shows next to the wordmark outside production, and
     an empty `#main-nav-filler` sits in the header for native app wrappers
     whose JS sizes it to the status bar.

@@ -23,6 +23,8 @@
                 <div class="hidden sm:block min-w-0">
                     @include('shared-ui::workbench.organization')
                 </div>
+                {{-- The app's own top bar additions, after the organization (e.g. a search) — desktop layout only --}}
+                @stack('topbar')
                 <div class="flex-1"></div>
                 @include('shared-ui::workbench.notifications')
                 @auth
