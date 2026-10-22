@@ -87,7 +87,7 @@
                     <button type="button" @click="open = ! open" :aria-expanded="open.toString()" aria-expanded="{{ $sectionOpen ? 'true' : 'false' }}"
                             class="w-full flex items-center gap-2 px-3 text-[0.68rem] font-semibold uppercase tracking-wider text-zinc-400 transition hover:text-zinc-200">
                         <span class="flex-1 truncate text-left">{{ __($item['heading']) }}</span>
-                        <i class="fa-solid text-[0.6rem] {{ $sectionOpen ? 'fa-chevron-up' : 'fa-chevron-down' }}" :class="open ? 'fa-chevron-up' : 'fa-chevron-down'"></i>
+                        <i class="fa-solid w-3 text-center text-[0.6rem] {{ $sectionOpen ? 'fa-chevron-down' : 'fa-chevron-right' }}" :class="open ? 'fa-chevron-down' : 'fa-chevron-right'"></i>
                     </button>
                 </div>
                 <div x-show="open" @unless ($sectionOpen) x-cloak @endunless class="space-y-1">
@@ -146,7 +146,7 @@
                     {{-- Collapsed only: expanded, the children show their own --}}
                     <span x-show="! open" @if ($open) x-cloak @endif data-group-badge class="{{ $pill }}">{{ $groupBadge > 99 ? '99+' : $groupBadge }}</span>
                 @endif
-                <i class="fa-solid text-xs {{ $open ? 'fa-chevron-up' : 'fa-chevron-down' }}" :class="open ? 'fa-chevron-up' : 'fa-chevron-down'"></i>
+                <i class="fa-solid w-3 text-center text-xs {{ $open ? 'fa-chevron-down' : 'fa-chevron-right' }}" :class="open ? 'fa-chevron-down' : 'fa-chevron-right'"></i>
             </button>
             <div x-show="open" @unless ($open) x-cloak @endunless class="mt-1 space-y-1">
                 @foreach ($children as $i => $childItem)
