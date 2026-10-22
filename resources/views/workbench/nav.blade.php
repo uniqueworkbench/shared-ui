@@ -86,13 +86,13 @@
                 <div role="heading" aria-level="2" data-nav-heading class="mt-4 mb-1">
                     <button type="button" @click="open = ! open" :aria-expanded="open.toString()" aria-expanded="{{ $sectionOpen ? 'true' : 'false' }}"
                             class="w-full flex items-center gap-2 px-3 text-[0.68rem] font-semibold uppercase tracking-wider text-zinc-400 transition hover:text-zinc-200">
-                        <span class="flex-1 truncate text-left">{{ __($item['heading']) }}</span>
+                        <span data-nav-label class="flex-1 truncate text-left">{{ __($item['heading']) }}</span>
                         <i class="fa-solid w-3 text-center text-[0.6rem] {{ $sectionOpen ? 'fa-chevron-down' : 'fa-chevron-right' }}" :class="open ? 'fa-chevron-down' : 'fa-chevron-right'"></i>
                     </button>
                 </div>
                 <div x-show="open" @unless ($sectionOpen) x-cloak @endunless class="space-y-1">
         @else
-            <div role="heading" aria-level="2" data-nav-heading class="mt-4 mb-1 px-3 text-[0.68rem] font-semibold uppercase tracking-wider text-zinc-400">{{ __($item['heading']) }}</div>
+            <div role="heading" aria-level="2" data-nav-heading class="mt-4 mb-1 px-3 text-[0.68rem] font-semibold uppercase tracking-wider text-zinc-400"><span data-nav-label>{{ __($item['heading']) }}</span></div>
         @endif
         @if (! empty($item['sortable']))
             {{-- Its items drag into another order (a mouse; HTML drag and drop), saved at once --}}
@@ -134,19 +134,19 @@
         @endphp
         @continue(empty($children))
         <div x-data="{ open: @js($open) }">
-            <button type="button" @click="open = ! open" :aria-expanded="open.toString()"
+            <button type="button" @click="open = ! open" :aria-expanded="open.toString()" data-nav-link title="{{ __($item['label']) }}"
                     @class([
                         'w-full flex items-center gap-3 px-3 py-2 rounded-md text-[0.8rem] font-medium transition hover:bg-white/5',
                         'text-white' => $open,
                         'text-zinc-200 hover:text-white' => ! $open,
                     ])>
                 <i class="{{ $item['icon'] ?? 'fa-solid fa-folder' }} w-4 text-center text-[0.9rem]"></i>
-                <span class="flex-1 truncate text-left">{{ __($item['label']) }}</span>
+                <span data-nav-label class="flex-1 truncate text-left">{{ __($item['label']) }}</span>
                 @if ($groupBadge > 0)
                     {{-- Collapsed only: expanded, the children show their own --}}
-                    <span x-show="! open" @if ($open) x-cloak @endif data-group-badge class="{{ $pill }}">{{ $groupBadge > 99 ? '99+' : $groupBadge }}</span>
+                    <span x-show="! open" @if ($open) x-cloak @endif data-group-badge data-nav-badge class="{{ $pill }}">{{ $groupBadge > 99 ? '99+' : $groupBadge }}</span>
                 @endif
-                <i class="fa-solid w-3 text-center text-xs {{ $open ? 'fa-chevron-down' : 'fa-chevron-right' }}" :class="open ? 'fa-chevron-down' : 'fa-chevron-right'"></i>
+                <i data-nav-label class="fa-solid w-3 text-center text-xs {{ $open ? 'fa-chevron-down' : 'fa-chevron-right' }}" :class="open ? 'fa-chevron-down' : 'fa-chevron-right'"></i>
             </button>
             <div x-show="open" @unless ($open) x-cloak @endunless class="mt-1 space-y-1">
                 @foreach ($children as $i => $childItem)

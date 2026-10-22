@@ -13,7 +13,7 @@
 @endphp
 <a href="{{ $item['url'] ?? route($item['route']) }}"
    @if ($active) aria-current="page" @endif
-   draggable="false"
+   draggable="false" data-nav-link title="{{ __($item['label']) }}"
    @class([
        'flex items-center gap-3 px-3 rounded-md font-medium transition',
        'py-2 text-[0.8rem]' => ! $child,
@@ -30,12 +30,15 @@
         </span>
     @elseif (! ($child && empty($item['icon'])))
         <i class="{{ $item['icon'] ?? 'fa-solid fa-circle' }} w-4 text-center text-[0.9rem]"></i>
+    @else
+        {{-- A child without an icon: a dot, only while the sidebar is collapsed to icons --}}
+        <i data-nav-dot class="hidden fa-solid fa-circle w-4 text-center text-[0.35rem]"></i>
     @endif
-    <span class="flex-1 truncate">{{ __($item['label']) }}</span>
+    <span data-nav-label class="flex-1 truncate">{{ __($item['label']) }}</span>
     @if ($count !== null)
-        <span data-nav-count class="text-[0.7rem] tabular-nums {{ $active ? 'text-white/80' : 'text-zinc-400' }}">{{ number_format($count) }}</span>
+        <span data-nav-count data-nav-label class="text-[0.7rem] tabular-nums {{ $active ? 'text-white/80' : 'text-zinc-400' }}">{{ number_format($count) }}</span>
     @endif
     @if ($badge > 0)
-        <span class="inline-flex items-center justify-center min-w-[1.25rem] px-1.5 py-0.5 rounded-full text-xs font-semibold leading-none {{ $active ? 'bg-white text-bt_primary-700' : 'bg-bt_primary-600 text-white' }}">{{ $badge > 99 ? '99+' : $badge }}</span>
+        <span data-nav-badge class="inline-flex items-center justify-center min-w-[1.25rem] px-1.5 py-0.5 rounded-full text-xs font-semibold leading-none {{ $active ? 'bg-white text-bt_primary-700' : 'bg-bt_primary-600 text-white' }}">{{ $badge > 99 ? '99+' : $badge }}</span>
     @endif
 </a>

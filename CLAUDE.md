@@ -12,7 +12,10 @@ infrastructure (hard-abend error tracking, the Feature API key check) used acros
     left sidebar (Return to Workbench at the very top, menu, Help & Support, version at the very
     bottom); the page title (`header`) heads the content. Below `lg` the sidebar
     turns into a drawer (hamburger in the top bar) that also holds the user,
-    their links and Log Out.
+    their links and Log Out. From `lg` up, a toggle above the version collapses the sidebar to its
+    icons (labels, counts and headings hidden; titles as tooltips; badges on the icon). The choice is the
+    `uw_nav_collapsed` cookie on the apps' parent domain, so it carries across every app; the styles are
+    inline in `desktop.blade.php` (keyed on `html.uw-nav-collapsed` + `data-nav-*` attributes), so apps rebuild nothing.
   - **phone** — dark app-style header (hamburger + centred title + bell); the
     drawer holds the user, organization, Return to Workbench, menu, their links,
     Log Out and the version. Content is `max-w-lg`.
