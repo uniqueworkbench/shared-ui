@@ -386,6 +386,11 @@ class Workbench
                 // Granted only per person in every organization (Admin → Users → Every Organization), never
                 // by an organization's owners or personas — e.g. the app's own Admin Mode (grantedEverywhere)
                 'everywhere_only' => (bool) ($definition['everywhere_only'] ?? false),
+                // Honoured in one organization only, picked by this app's .env (e.g. 'only_organization_id' =>
+                // env('QUOTING_OPERATOR_ORG_ID'), 'only_organization_env' => 'QUOTING_OPERATOR_ORG_ID'), so the
+                // account app can show it; null = every organization
+                'only_organization_id' => ($definition['only_organization_id'] ?? null) ? (int) $definition['only_organization_id'] : null,
+                'only_organization_env' => $definition['only_organization_env'] ?? null,
             ];
         }
 
