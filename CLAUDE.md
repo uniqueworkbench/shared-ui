@@ -244,7 +244,10 @@ infrastructure (hard-abend error tracking, the Feature API key check) used acros
   **Customers** and **Branding** to the menu and routes `/portal/customers`, `/portal/branding` (`portal.*`, gate `portal-owner` =
   `workbench()->isPortalOwner()`) — `Workbench\Portal\PortalController`, calling the account app's `/api/portal` with the signed-in
   user's `sso_access_token`. `workbench()->portal()` / `portalRole()` (owner|customer) / `isPortalOwner()` / `isPortalCustomer()` /
-  `portalBrand()` come from `/api/user`'s `portal`, for a portal and for the apps in it.
+  `portalBrand()` come from `/api/user`'s `portal`, for a portal and for the apps in it. One portal app is shared by many owner
+  organizations: `portalOwnerId()` / `portalOwnerName()` say whose portal this visit is (an owner's own organization; for a
+  customer, the owner whose tile it opened), and `portalBrand()` is that owner's look. Key the portal's own data by
+  `portalOwnerId()` and never show one owner's customers, data or branding to another.
 
 ## Rules
 - No app-*specific* logic here — logic must be generic enough to apply to every

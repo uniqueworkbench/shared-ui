@@ -149,6 +149,21 @@ class Workbench
         return $this->get('portal');
     }
 
+    /**
+     * WHOSE portal this visit is: the owner organization's id. One portal app serves many owners, so key the portal's own
+     * data by it (an owner's staff see their own organization's; a customer sees the owner whose tile it opened) and never
+     * show one owner's customers, data or branding to another.
+     */
+    public function portalOwnerId(): ?int
+    {
+        return isset($this->portal()['owner']['id']) ? (int) $this->portal()['owner']['id'] : null;
+    }
+
+    public function portalOwnerName(): ?string
+    {
+        return $this->portal()['owner']['name'] ?? null;
+    }
+
     /** 'owner' or 'customer' — what the organization is to the portal — or null */
     public function portalRole(): ?string
     {

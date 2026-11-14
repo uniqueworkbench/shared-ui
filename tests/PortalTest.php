@@ -10,7 +10,7 @@ class PortalTest extends TestCase
     {
         $context = Workbench::fromSsoUser([
             'organization_id' => 5, 'organization_role' => 'owner',
-            'portal' => ['role' => 'owner', 'branding' => ['primary_color' => '#112233']],
+            'portal' => ['role' => 'owner', 'owner' => ['id' => 5, 'name' => 'Acme'], 'branding' => ['primary_color' => '#112233']],
         ]);
         $this->assertSame('owner', $context['portal']['role']);
 
@@ -18,6 +18,7 @@ class PortalTest extends TestCase
         $workbench->set($context);
         $this->assertTrue($workbench->isPortalOwner());
         $this->assertFalse($workbench->isPortalCustomer());
+        $this->assertSame([5, 'Acme'], [$workbench->portalOwnerId(), $workbench->portalOwnerName()]);
         $this->assertSame('#112233', $workbench->portalBrand()['primary_color']);
 
         // A member (not an owner) of an owning organization sees the portal but doesn't manage it
