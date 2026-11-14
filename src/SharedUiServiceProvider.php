@@ -14,6 +14,7 @@ use UniqueWorkbench\SharedUi\Workbench\Directory;
 use UniqueWorkbench\SharedUi\Workbench\DirectoryChangedController;
 use UniqueWorkbench\SharedUi\Workbench\EnsureWorkbenchContext;
 use UniqueWorkbench\SharedUi\Workbench\UserRemovedController;
+use UniqueWorkbench\SharedUi\Workbench\Portal\PortalController;
 use UniqueWorkbench\SharedUi\Workbench\Workbench;
 
 class SharedUiServiceProvider extends ServiceProvider
@@ -93,6 +94,31 @@ class SharedUiServiceProvider extends ServiceProvider
                             'uses' => Workbench::declaredUses(),
                         ])
                         ->name('features.permissions');
+                }
+            });
+        }
+
+        // A portal app: its owners manage customers and branding (the account app holds the data)
+        if (config('shared-ui.portal')) {
+            Gate::define('portal-owner', fn () => workbench()->isPortalOwner());
+
+            config(['shared-ui.navigation' => [...config('shared-ui.navigation', []), [
+                'label' => 'Customers', 'route' => 'portal.customers', 'icon' => 'fa-solid fa-handshake', 'can' => 'portal-owner',
+            ], [
+                'label' => 'Branding', 'route' => 'portal.branding', 'icon' => 'fa-solid fa-palette', 'can' => 'portal-owner',
+            ]]]);
+
+            $this->app->booted(function () {
+                if (! $this->app->routesAreCached()) {
+                    $this->app['router']->middleware(['web', 'auth', 'workbench', 'can:portal-owner'])->prefix('portal')->group(function ($router) {
+                        $router->get('/customers', [PortalController::class, 'customers'])->name('portal.customers');
+                        $router->post('/customers/invites', [PortalController::class, 'invite'])->name('portal.invites.store');
+                        $router->post('/customers/invites/{invite}/resend', [PortalController::class, 'resend'])->name('portal.invites.resend');
+                        $router->delete('/customers/invites/{invite}', [PortalController::class, 'revoke'])->name('portal.invites.destroy');
+                        $router->delete('/customers/{organization}', [PortalController::class, 'removeCustomer'])->name('portal.customers.destroy');
+                        $router->get('/branding', [PortalController::class, 'branding'])->name('portal.branding');
+                        $router->put('/branding', [PortalController::class, 'saveBranding'])->name('portal.branding.update');
+                    });
                 }
             });
         }

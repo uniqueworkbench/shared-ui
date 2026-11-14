@@ -79,6 +79,9 @@ class Workbench
             // The ones a Super Admin gave them in every organization (canEverywhere); older account apps don't send them
             'everywhere_permissions' => array_values($ssoUser['everywhere_permissions'] ?? []),
             'app_settings' => (array) ($ssoUser['app_settings'] ?? []),
+            // When this app is a portal (or lives in one): what the organization is to it — role owner|customer, its owners,
+            // its look (branding) and its apps; null for an ordinary app or from older account apps
+            'portal' => is_array($ssoUser['portal'] ?? null) ? $ssoUser['portal'] : null,
             // This app's brand, uploaded in the account app (absolute URLs; null = this app's own files)
             'app_branding' => array_map(
                 fn ($url) => is_string($url) && $url !== '' ? $url : null,
@@ -138,6 +141,41 @@ class Workbench
     public function organizationName(): ?string
     {
         return $this->get('organization_name');
+    }
+
+    /** The portal this app is, or lives in, and what the organization is to it (the account app's `portal`), or null */
+    public function portal(): ?array
+    {
+        return $this->get('portal');
+    }
+
+    /** 'owner' or 'customer' — what the organization is to the portal — or null */
+    public function portalRole(): ?string
+    {
+        return $this->portal()['role'] ?? null;
+    }
+
+    /** A member of an organization that owns the portal */
+    public function isPortalOwnerOrg(): bool
+    {
+        return $this->portalRole() === 'owner';
+    }
+
+    /** May manage the portal (customers, branding): an owner of an organization that owns it */
+    public function isPortalOwner(): bool
+    {
+        return $this->isPortalOwnerOrg() && $this->role() === 'owner';
+    }
+
+    public function isPortalCustomer(): bool
+    {
+        return $this->portalRole() === 'customer';
+    }
+
+    /** The portal's look: primary_color, secondary_color, accent_color, icon, customer_icon (defaults when none set) */
+    public function portalBrand(): array
+    {
+        return $this->portal()['branding'] ?? [];
     }
 
     /** The user's picture from the account app, or null */

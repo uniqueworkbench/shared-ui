@@ -240,6 +240,12 @@ infrastructure (hard-abend error tracking, the Feature API key check) used acros
       (30 s leeway). The caller is on the request as `workbench.connection` (`app`, `share`,
       `organization_id`, `jti`); anything else is a 401. Needs `firebase/php-jwt` (^6.10 or ^7).
 
+- **Portals** — with `config('shared-ui.portal')` (`WORKBENCH_PORTAL=true`, written by New App Setup for a portal) the provider adds
+  **Customers** and **Branding** to the menu and routes `/portal/customers`, `/portal/branding` (`portal.*`, gate `portal-owner` =
+  `workbench()->isPortalOwner()`) — `Workbench\Portal\PortalController`, calling the account app's `/api/portal` with the signed-in
+  user's `sso_access_token`. `workbench()->portal()` / `portalRole()` (owner|customer) / `isPortalOwner()` / `isPortalCustomer()` /
+  `portalBrand()` come from `/api/user`'s `portal`, for a portal and for the apps in it.
+
 ## Rules
 - No app-*specific* logic here — logic must be generic enough to apply to every
   consuming app (not "how account.uniqueworkbench.com handles X")

@@ -31,6 +31,19 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Portal
+    |--------------------------------------------------------------------------
+    |
+    | True for an app made as a portal (New App Setup writes WORKBENCH_PORTAL=true):
+    | turns on the Customers and Branding screens (/portal/customers, /portal/branding),
+    | which an owner of the portal uses through the account app's /api/portal.
+    |
+    */
+
+    'portal' => env('WORKBENCH_PORTAL', false),
+
+    /*
+    |--------------------------------------------------------------------------
     | Google Maps (address lookup)
     |--------------------------------------------------------------------------
     |
