@@ -58,7 +58,20 @@ class PortalController
 
     public function saveBranding(Request $request): RedirectResponse
     {
-        $response = $this->send($request, 'put', '/api/portal/branding', $request->only(['primary_color', 'secondary_color', 'accent_color', 'icon', 'customer_icon']));
+        $request->validate([
+            'icon_image' => ['nullable', 'file', 'image', 'mimes:png,jpg,jpeg,gif,webp', 'max:2048'],
+            'customer_icon_image' => ['nullable', 'file', 'image', 'mimes:png,jpg,jpeg,gif,webp', 'max:2048'],
+        ], ['*' => __('Upload a PNG, JPG, GIF or WebP picture under 2 MB.')]);
+
+        // Pictures go along as a multipart POST (a PUT body isn't read as one)
+        $fields = $request->only(['primary_color', 'secondary_color', 'accent_color', 'icon', 'customer_icon', 'remove_icon_image', 'remove_customer_icon_image']);
+        $pending = Http::withToken($this->token($request))->acceptJson()->timeout(30);
+        foreach (['icon_image', 'customer_icon_image'] as $key) {
+            if ($file = $request->file($key)) {
+                $pending = $pending->attach($key, file_get_contents($file->getRealPath()), $file->getClientOriginalName());
+            }
+        }
+        $response = $pending->post(rtrim((string) config('sso.base_url'), '/') . '/api/portal/branding', $fields);
 
         // Their own session's copy of the look, so it shows now rather than at next sign-in
         if ($response->successful()) {
@@ -70,12 +83,17 @@ class PortalController
         return $this->done($response, __('Branding saved.'));
     }
 
-    private function send(Request $request, string $method, string $path, array $data = []): Response
+    private function token(Request $request): string
     {
         $token = $request->user()?->sso_access_token;
         abort_unless($token, 403, __('Sign in again to manage the portal.'));
 
-        return Http::withToken($token)->acceptJson()->timeout(15)->{$method}(rtrim((string) config('sso.base_url'), '/') . $path, $data);
+        return $token;
+    }
+
+    private function send(Request $request, string $method, string $path, array $data = []): Response
+    {
+        return Http::withToken($this->token($request))->acceptJson()->timeout(15)->{$method}(rtrim((string) config('sso.base_url'), '/') . $path, $data);
     }
 
     private function done(Response $response, string $success, string $errorField = 'portal'): RedirectResponse

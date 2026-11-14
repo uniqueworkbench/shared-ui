@@ -241,8 +241,7 @@ infrastructure (hard-abend error tracking, the Feature API key check) used acros
       `organization_id`, `jti`); anything else is a 401. Needs `firebase/php-jwt` (^6.10 or ^7).
 
 - **Portals** — with `config('shared-ui.portal')` (`WORKBENCH_PORTAL=true`, written by New App Setup for a portal) the provider adds
-  **Customers** and **Branding** to the menu and routes `/portal/customers`, `/portal/branding` (`portal.*`, gate `portal-owner` =
-  `workbench()->isPortalOwner()`) — `Workbench\Portal\PortalController`, calling the account app's `/api/portal` with the signed-in
+  **Customers** and **Branding** to the menu and routes `/portal/customers`, `/portal/branding` (`portal.*`; each screen is gated by its permission — `portal.manage_customers` / `portal.manage_branding`, `workbench()->canManagePortalCustomers()` / `canManagePortalBranding()`: a member of an owner organization who holds it, owners of the organization always; never a customer organization. Declared with the app's own permissions so Sync from app keeps them) — `Workbench\Portal\PortalController`, calling the account app's `/api/portal` with the signed-in
   user's `sso_access_token`. `workbench()->portal()` / `portalRole()` (owner|customer) / `isPortalOwner()` / `isPortalCustomer()` /
   `portalBrand()` come from `/api/user`'s `portal`, for a portal and for the apps in it. One portal app is shared by many owner
   organizations: `portalOwnerId()` / `portalOwnerName()` say whose portal this visit is (an owner's own organization; for a

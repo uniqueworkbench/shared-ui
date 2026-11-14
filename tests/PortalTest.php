@@ -35,4 +35,36 @@ class PortalTest extends TestCase
         $this->assertNull($workbench->portal());
         $this->assertSame([], $workbench->portalBrand());
     }
+
+    public function test_managing_branding_and_customers_are_each_a_permission_of_an_owner_organization(): void
+    {
+        $workbench = new Workbench(app('session.store'));
+        $context = fn (string $portalRole, array $permissions, string $role = 'user') => Workbench::fromSsoUser([
+            'organization_id' => 5, 'organization_role' => $role, 'permissions' => $permissions, 'portal' => ['role' => $portalRole],
+        ]);
+
+        $workbench->set($context('owner', ['portal.manage_branding']));
+        $this->assertTrue($workbench->canManagePortalBranding());
+        $this->assertFalse($workbench->canManagePortalCustomers());
+
+        $workbench->set($context('owner', ['portal.manage_customers']));
+        $this->assertFalse($workbench->canManagePortalBranding());
+        $this->assertTrue($workbench->canManagePortalCustomers());
+
+        // A customer organization never does, whatever it holds
+        $workbench->set($context('customer', ['portal.manage_branding', 'portal.manage_customers'], 'owner'));
+        $this->assertFalse($workbench->canManagePortalBranding());
+        $this->assertFalse($workbench->canManagePortalCustomers());
+    }
+
+    public function test_a_portal_declares_its_two_permissions_with_the_apps_own(): void
+    {
+        config(['workbench.permissions' => ['orders.view' => 'View orders']]);
+        $this->assertSame(['orders.view'], array_column(Workbench::declaredPermissions(), 'key'));
+
+        config(['shared-ui.portal' => true]);
+        $declared = collect(Workbench::declaredPermissions())->keyBy('key');
+        $this->assertSame(['orders.view', 'portal.manage_branding', 'portal.manage_customers'], $declared->keys()->all());
+        $this->assertFalse($declared['portal.manage_branding']['default']);
+    }
 }

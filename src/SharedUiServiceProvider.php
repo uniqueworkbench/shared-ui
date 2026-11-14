@@ -100,24 +100,39 @@ class SharedUiServiceProvider extends ServiceProvider
 
         // A portal app: its owners manage customers and branding (the account app holds the data)
         if (config('shared-ui.portal')) {
+            // The portal's two permissions (the account app makes them with every portal; owners of the owning
+            // organization hold both, others through a persona): one gate each, never for a customer organization
+            Gate::define(Workbench::PORTAL_MANAGE_BRANDING, fn () => workbench()->canManagePortalBranding());
+            Gate::define(Workbench::PORTAL_MANAGE_CUSTOMERS, fn () => workbench()->canManagePortalCustomers());
             Gate::define('portal-owner', fn () => workbench()->isPortalOwner());
 
-            config(['shared-ui.navigation' => [...config('shared-ui.navigation', []), [
-                'label' => 'Customers', 'route' => 'portal.customers', 'icon' => 'fa-solid fa-handshake', 'can' => 'portal-owner',
-            ], [
-                'label' => 'Branding', 'route' => 'portal.branding', 'icon' => 'fa-solid fa-palette', 'can' => 'portal-owner',
-            ]]]);
+            // Added once: a cached config (php artisan config:cache runs the providers first) already holds them
+            $navigation = config('shared-ui.navigation', []);
+            $present = array_column($navigation, 'route');
+            foreach ([
+                ['label' => 'Customers', 'route' => 'portal.customers', 'icon' => 'fa-solid fa-handshake', 'can' => Workbench::PORTAL_MANAGE_CUSTOMERS],
+                ['label' => 'Branding', 'route' => 'portal.branding', 'icon' => 'fa-solid fa-palette', 'can' => Workbench::PORTAL_MANAGE_BRANDING],
+            ] as $item) {
+                if (! in_array($item['route'], $present, true)) {
+                    $navigation[] = $item;
+                }
+            }
+            config(['shared-ui.navigation' => $navigation]);
 
             $this->app->booted(function () {
                 if (! $this->app->routesAreCached()) {
-                    $this->app['router']->middleware(['web', 'auth', 'workbench', 'can:portal-owner'])->prefix('portal')->group(function ($router) {
-                        $router->get('/customers', [PortalController::class, 'customers'])->name('portal.customers');
-                        $router->post('/customers/invites', [PortalController::class, 'invite'])->name('portal.invites.store');
-                        $router->post('/customers/invites/{invite}/resend', [PortalController::class, 'resend'])->name('portal.invites.resend');
-                        $router->delete('/customers/invites/{invite}', [PortalController::class, 'revoke'])->name('portal.invites.destroy');
-                        $router->delete('/customers/{organization}', [PortalController::class, 'removeCustomer'])->name('portal.customers.destroy');
-                        $router->get('/branding', [PortalController::class, 'branding'])->name('portal.branding');
-                        $router->put('/branding', [PortalController::class, 'saveBranding'])->name('portal.branding.update');
+                    $this->app['router']->middleware(['web', 'auth', 'workbench'])->prefix('portal')->group(function ($router) {
+                        $router->middleware('can:' . Workbench::PORTAL_MANAGE_CUSTOMERS)->group(function ($router) {
+                            $router->get('/customers', [PortalController::class, 'customers'])->name('portal.customers');
+                            $router->post('/customers/invites', [PortalController::class, 'invite'])->name('portal.invites.store');
+                            $router->post('/customers/invites/{invite}/resend', [PortalController::class, 'resend'])->name('portal.invites.resend');
+                            $router->delete('/customers/invites/{invite}', [PortalController::class, 'revoke'])->name('portal.invites.destroy');
+                            $router->delete('/customers/{organization}', [PortalController::class, 'removeCustomer'])->name('portal.customers.destroy');
+                        });
+                        $router->middleware('can:' . Workbench::PORTAL_MANAGE_BRANDING)->group(function ($router) {
+                            $router->get('/branding', [PortalController::class, 'branding'])->name('portal.branding');
+                            $router->put('/branding', [PortalController::class, 'saveBranding'])->name('portal.branding.update');
+                        });
                     });
                 }
             });

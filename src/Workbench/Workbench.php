@@ -34,6 +34,11 @@ class Workbench
 
     public const WORKFORCE = ['employee', 'contractor'];
 
+    /** The two permissions every portal comes with (the account app makes them; owners give them to personas) */
+    public const PORTAL_MANAGE_BRANDING = 'portal.manage_branding';
+
+    public const PORTAL_MANAGE_CUSTOMERS = 'portal.manage_customers';
+
     public function __construct(private Session $session)
     {
     }
@@ -180,6 +185,18 @@ class Workbench
     public function isPortalOwner(): bool
     {
         return $this->isPortalOwnerOrg() && $this->role() === 'owner';
+    }
+
+    /** May set the portal's branding for their organization: a member of an owner organization with Manage branding */
+    public function canManagePortalBranding(): bool
+    {
+        return $this->isPortalOwnerOrg() && in_array(self::PORTAL_MANAGE_BRANDING, $this->get('permissions', []), true);
+    }
+
+    /** May invite and remove the owner organization's customers: a member of an owner organization with Manage customers */
+    public function canManagePortalCustomers(): bool
+    {
+        return $this->isPortalOwnerOrg() && in_array(self::PORTAL_MANAGE_CUSTOMERS, $this->get('permissions', []), true);
     }
 
     public function isPortalCustomer(): bool
@@ -429,7 +446,15 @@ class Workbench
     public static function declaredPermissions(): array
     {
         $declared = [];
-        foreach (config('workbench.permissions', []) as $key => $definition) {
+        $permissions = config('workbench.permissions', []);
+        if (config('shared-ui.portal')) {
+            // Every portal's own two, declared so Sync from app keeps them with the app's
+            $permissions += [
+                self::PORTAL_MANAGE_BRANDING => ['label' => 'Manage branding', 'description' => "Set the portal's colours, icons and pictures for this organization."],
+                self::PORTAL_MANAGE_CUSTOMERS => ['label' => 'Manage customers', 'description' => 'Invite customers to the portal, resend or withdraw invitations, and remove customers.'],
+            ];
+        }
+        foreach ($permissions as $key => $definition) {
             $definition = is_array($definition) ? $definition : ['label' => $definition];
             $declared[] = [
                 'key' => (string) $key,
