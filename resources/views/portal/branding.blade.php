@@ -1,11 +1,11 @@
-{{-- A portal's Branding screen ($brand: primary_color, secondary_color, accent_color, icon, customer_icon, icon_image_url, customer_icon_image_url) --}}
+{{-- A portal's Branding screen ($brand: title, primary_color, secondary_color, accent_color, icon, customer_icon, icon_image_url, customer_icon_image_url) --}}
 @php
     $icons = ['fa-building', 'fa-handshake', 'fa-store', 'fa-briefcase', 'fa-truck', 'fa-box', 'fa-wrench', 'fa-screwdriver-wrench', 'fa-hard-hat', 'fa-industry', 'fa-warehouse', 'fa-leaf', 'fa-heart', 'fa-star', 'fa-bolt', 'fa-shield-halved', 'fa-graduation-cap', 'fa-stethoscope', 'fa-utensils', 'fa-car', 'fa-house', 'fa-globe', 'fa-chart-line', 'fa-users'];
     $colors = ['primary_color' => __('Primary colour'), 'secondary_color' => __('Secondary colour'), 'accent_color' => __('Accent colour')];
     // Each icon, and the picture that can be uploaded in its place
     $iconFields = [
-        'icon' => ['label' => __('Portal icon'), 'image' => 'icon_image'],
-        'customer_icon' => ['label' => __('Icon customers see on their Partner Portals tile'), 'image' => 'customer_icon_image'],
+        'icon' => ['label' => __('Portal icon'), 'description' => __('Your own tile on the home page, and the top left corner inside the portal.'), 'image' => 'icon_image'],
+        'customer_icon' => ['label' => __('Icon customers see on their Partner Portals tile'), 'description' => __('Shown to your customers on their Partner Portals tile.'), 'image' => 'customer_icon_image'],
     ];
 @endphp
 <x-workbench-layout :title="__('Branding')">
@@ -17,6 +17,11 @@
 
         <form method="POST" action="{{ route('portal.branding.update') }}" enctype="multipart/form-data" data-dirty-form class="space-y-6">
             @csrf @method('PUT')
+            <x-card :title="__('Title')" :description="__('Your portal name on your own tile and in the top left corner inside the portal. Leave it empty to use the portal\'s own name.')">
+                <x-text-input id="title" name="title" type="text" maxlength="40" class="block w-full sm:max-w-md" :value="old('title', $brand['title'] ?? '')" />
+                <x-input-error :messages="$errors->get('title')" class="mt-2" />
+            </x-card>
+
             <x-card :title="__('Colours')" :description="__('How your portal looks to you and your customers.')">
                 <div class="grid gap-4 sm:grid-cols-3">
                     @foreach ($colors as $key => $label)
@@ -30,7 +35,7 @@
 
             @foreach ($iconFields as $key => $field)
                 @php $imageKey = $field['image']; $current = $brand[$imageKey . '_url'] ?? null; @endphp
-                <x-card :title="$field['label']" :description="__('Choose an icon, or upload your own picture — a picture is used instead of the icon.')">
+                <x-card :title="$field['label']" :description="$field['description'] . ' ' . __('Choose an icon, or upload your own picture — a picture is used instead of the icon.')">
                     <div class="grid grid-cols-6 sm:grid-cols-8 gap-2">
                         @foreach ($icons as $icon)
                             <label class="flex h-12 items-center justify-center rounded-md border border-zinc-200 cursor-pointer text-zinc-600 has-[:checked]:border-bt_primary-500 has-[:checked]:bg-bt_primary-50 has-[:checked]:text-bt_primary-700">

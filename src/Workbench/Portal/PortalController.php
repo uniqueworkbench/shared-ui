@@ -76,12 +76,13 @@ class PortalController
     public function saveBranding(Request $request): RedirectResponse
     {
         $request->validate([
+            'title' => ['nullable', 'string', 'max:40'],
             'icon_image' => ['nullable', 'file', 'image', 'mimes:png,jpg,jpeg,gif,webp', 'max:2048'],
             'customer_icon_image' => ['nullable', 'file', 'image', 'mimes:png,jpg,jpeg,gif,webp', 'max:2048'],
         ], ['*' => __('Upload a PNG, JPG, GIF or WebP picture under 2 MB.')]);
 
         // Pictures go along as a multipart POST (a PUT body isn't read as one)
-        $fields = $request->only(['primary_color', 'secondary_color', 'accent_color', 'icon', 'customer_icon', 'remove_icon_image', 'remove_customer_icon_image']);
+        $fields = $request->only(['title', 'primary_color', 'secondary_color', 'accent_color', 'icon', 'customer_icon', 'remove_icon_image', 'remove_customer_icon_image']);
         $pending = Http::withToken($this->token($request))->acceptJson()->timeout(30);
         foreach (['icon_image', 'customer_icon_image'] as $key) {
             if ($file = $request->file($key)) {

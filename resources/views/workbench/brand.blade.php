@@ -12,8 +12,22 @@
     $headerLogo = $brandImage('app_header_logo', 'header_logo_url');
     $appIcon = $headerLogo ? null : $brandImage('app_icon', 'icon_url');
 @endphp
+@php
+    // Inside a portal: the owner's own icon and title (their look, whoever is signed in), else the app's brand below
+    $portalBrand = config('shared-ui.portal') && auth()->check() ? workbench()->portalBrand() : [];
+    $portalTitle = $portalBrand ? (($portalBrand['title'] ?? null) ?: (workbench()->portal()['name'] ?? config('app.name'))) : null;
+@endphp
 <a href="{{ \Illuminate\Support\Facades\Route::has('dashboard') ? route('dashboard') : url('/') }}" class="flex items-center gap-2 min-w-0 text-white">
-    @if ($headerLogo)
+    @if ($portalBrand)
+        <span class="inline-flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-md bg-white" @if (empty($portalBrand['icon_image_url'])) style="color: {{ $portalBrand['primary_color'] ?? '#2563eb' }}" @endif>
+            @if (! empty($portalBrand['icon_image_url']))
+                <img src="{{ $portalBrand['icon_image_url'] }}" alt="" class="h-full w-full object-cover">
+            @else
+                <i class="fa-solid {{ $portalBrand['icon'] ?? 'fa-building' }}"></i>
+            @endif
+        </span>
+        <span class="min-w-0 truncate text-base font-semibold">{{ $portalTitle }}</span>
+    @elseif ($headerLogo)
         <img src="{{ $headerLogo }}" alt="{{ config('app.name') }}" class="h-9 w-auto min-w-0 max-w-full object-contain object-left">
     @elseif ($appIcon)
         <img src="{{ $appIcon }}" alt="" class="h-9 w-9 shrink-0 rounded-md bg-white object-contain p-0.5">
