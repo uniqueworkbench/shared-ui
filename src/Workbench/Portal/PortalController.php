@@ -3,13 +3,14 @@
 namespace UniqueWorkbench\SharedUi\Workbench\Portal;
 
 use Illuminate\Http\Client\Response;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
 /**
- * A portal's built-in screens for its owners: customers (invite by email, resend, withdraw, remove) and
+ * A portal's built-in screens for its owners: customers (pick one from the account app's Customers or invite by email, resend, withdraw, remove) and
  * branding (colours and icons). The data is the account app's; this calls its /api/portal with the
  * signed-in user's own token (sso_access_token on the app's users).
  */
@@ -31,9 +32,25 @@ class PortalController
 
     public function invite(Request $request): RedirectResponse
     {
-        $validated = $request->validate(['email' => ['required', 'email', 'max:255'], 'name' => ['nullable', 'string', 'max:255']]);
+        // Either one of the owner's own customers from the account app's directory (customer_id; it's invited at the
+        // chosen contact's email) or just an email
+        $validated = $request->validate([
+            'customer_id' => ['nullable', 'integer'],
+            'email' => [$request->filled('customer_id') ? 'nullable' : 'required', 'email', 'max:255'],
+            'name' => ['nullable', 'string', 'max:255'],
+        ]);
+        $response = $this->send($request, 'post', '/api/portal/invites', array_filter($validated, fn ($value) => filled($value)));
+        $sentTo = $response->json('invite.email') ?: ($validated['email'] ?? '');
 
-        return $this->done($this->send($request, 'post', '/api/portal/invites', $validated), __('Invitation sent to :email.', ['email' => $validated['email']]), 'email');
+        return $this->done($response, __('Invitation sent to :email.', ['email' => $sentTo]), $request->filled('customer_id') ? 'portal' : 'email');
+    }
+
+    /** The owner's own customers (the account app's directory) matching ?q=, for the picker on the Customers screen */
+    public function searchCustomers(Request $request): JsonResponse
+    {
+        $response = $this->send($request, 'get', '/api/portal/customers/search', ['q' => (string) $request->query('q')]);
+
+        return response()->json($response->successful() ? $response->json() : [], $response->successful() ? 200 : 502);
     }
 
     public function resend(Request $request, int $invite): RedirectResponse
