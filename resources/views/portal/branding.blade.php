@@ -1,4 +1,4 @@
-{{-- A portal's Branding screen ($brand: title, palette, icon, customer_icon, icon_image_url, customer_icon_image_url) --}}
+{{-- A portal's Branding screen ($brand: title, palette, icon, customer_icon, icon_image_url, customer_icon_image_url, favicon_image_url) --}}
 @php
     $icons = ['fa-building', 'fa-handshake', 'fa-store', 'fa-briefcase', 'fa-truck', 'fa-box', 'fa-wrench', 'fa-screwdriver-wrench', 'fa-hard-hat', 'fa-industry', 'fa-warehouse', 'fa-leaf', 'fa-heart', 'fa-star', 'fa-bolt', 'fa-shield-halved', 'fa-graduation-cap', 'fa-stethoscope', 'fa-utensils', 'fa-car', 'fa-house', 'fa-globe', 'fa-chart-line', 'fa-users'];
     // Each icon, and the picture that can be uploaded in its place
@@ -80,6 +80,27 @@
                     </div>
                 </x-card>
             @endforeach
+
+            @php $favicon = $brand['favicon_image_url'] ?? null; @endphp
+            <x-card :title="__('Favicon')" :description="__('The small picture on the browser tab while people are in your portal. Without one, the portal\'s own is used.')">
+                <div class="flex flex-wrap items-center gap-4">
+                    @if ($favicon)
+                        <img src="{{ $favicon }}" alt="" class="h-10 w-10 rounded border border-zinc-200 object-contain bg-white p-1" data-current-image="favicon_image">
+                    @endif
+                    <div class="min-w-0">
+                        <x-input-label for="favicon_image" :value="$favicon ? __('Replace the favicon') : __('Upload a favicon')" />
+                        <input id="favicon_image" name="favicon_image" type="file" accept="image/png,image/jpeg,image/gif,image/webp" class="mt-1 block text-sm text-zinc-600">
+                        <p class="mt-1 text-xs text-zinc-500">{{ __('Square, at least 64 × 64 pixels works best. PNG, JPG, GIF or WebP, up to 2 MB.') }}</p>
+                        <x-input-error :messages="$errors->get('favicon_image')" class="mt-1" />
+                    </div>
+                    @if ($favicon)
+                        <label class="flex items-center gap-2 text-sm text-zinc-700">
+                            <input type="checkbox" name="remove_favicon_image" value="1" class="rounded border-zinc-300 text-bt_primary-600 focus:ring-bt_primary-500">
+                            {{ __('Remove the favicon') }}
+                        </label>
+                    @endif
+                </div>
+            </x-card>
 
             <div><x-primary-button>{{ __('Save branding') }}</x-primary-button></div>
         </form>

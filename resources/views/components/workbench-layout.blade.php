@@ -27,7 +27,8 @@
 
         <title @if ($inertia) inertia @endif>{{ $pageTitle }}</title>
         {{-- The favicon uploaded in the account app (sent at sign-in), else the app's own --}}
-        <link rel="icon" href="{{ (auth()->check() ? workbench()->brandingUrl('favicon_url') : null) ?: config('app.favicon', '/favicon.ico') }}">
+        {{-- In a portal, the owner's own favicon comes first --}}
+        <link rel="icon" href="{{ (config('shared-ui.portal') && auth()->check() ? (workbench()->portalBrand()['favicon_image_url'] ?? null) : null) ?: (auth()->check() ? workbench()->brandingUrl('favicon_url') : null) ?: config('app.favicon', '/favicon.ico') }}">
 
         <!-- Fonts -->
         <link rel="preconnect" href="https://fonts.bunny.net">

@@ -99,12 +99,13 @@ class PortalController
             'palette' => ['nullable', 'string', 'max:40'],
             'icon_image' => ['nullable', 'file', 'image', 'mimes:png,jpg,jpeg,gif,webp', 'max:2048'],
             'customer_icon_image' => ['nullable', 'file', 'image', 'mimes:png,jpg,jpeg,gif,webp', 'max:2048'],
+            'favicon_image' => ['nullable', 'file', 'image', 'mimes:png,jpg,jpeg,gif,webp', 'max:2048'],
         ], ['*' => __('Upload a PNG, JPG, GIF or WebP picture under 2 MB.')]);
 
         // Pictures go along as a multipart POST (a PUT body isn't read as one)
-        $fields = $request->only(['title', 'palette', 'icon', 'customer_icon', 'remove_icon_image', 'remove_customer_icon_image']);
+        $fields = $request->only(['title', 'palette', 'icon', 'customer_icon', 'remove_icon_image', 'remove_customer_icon_image', 'remove_favicon_image']);
         $pending = Http::withToken($this->token($request))->acceptJson()->timeout(30);
-        foreach (['icon_image', 'customer_icon_image'] as $key) {
+        foreach (['icon_image', 'customer_icon_image', 'favicon_image'] as $key) {
             if ($file = $request->file($key)) {
                 $pending = $pending->attach($key, file_get_contents($file->getRealPath()), $file->getClientOriginalName());
             }
