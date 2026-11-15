@@ -18,7 +18,7 @@
     @endif
 @endforeach
 
-@if (config('shared-ui.portal_url') && $style === 'dropdown')
+@if (config('shared-ui.portal_url') && ! config('shared-ui.portal') && $style === 'dropdown')
     <x-dropdown-link :href="config('shared-ui.portal_url')">
         <i class="fa-solid fa-arrow-left w-4 mr-2 text-center"></i>{{ __('Return to Workbench') }}
     </x-dropdown-link>

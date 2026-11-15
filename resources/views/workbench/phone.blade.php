@@ -1,7 +1,7 @@
 {{-- Phone layout: a dark app-style header (hamburger, centred title, notifications) with a dark drawer holding the user, the organization, Return to Workbench, menu, their links, Log Out and the version. --}}
 <div x-data="{ drawer: false }" @keydown.escape.window="drawer = false" class="min-h-screen flex flex-col">
     <!-- Header -->
-    <header class="sticky top-0 z-20 bg-zinc-900 text-white" style="padding-top: env(safe-area-inset-top)">
+    <header class="sticky top-0 z-20 uw-chrome-top text-white" style="padding-top: env(safe-area-inset-top)">
         {{-- Sized by native app wrappers whose status bar overlaps the page (see the app's JS) --}}
         <div id="main-nav-filler"></div>
         <div class="h-14 flex items-center gap-2 px-2">
@@ -21,7 +21,7 @@
     <aside x-show="drawer" x-cloak
            x-transition:enter="transition ease-out duration-200" x-transition:enter-start="-translate-x-full" x-transition:enter-end="translate-x-0"
            x-transition:leave="transition ease-in duration-150" x-transition:leave-start="translate-x-0" x-transition:leave-end="-translate-x-full"
-           class="fixed inset-y-0 left-0 z-50 w-72 max-w-[85%] bg-zinc-900 text-white shadow-xl flex flex-col"
+           class="fixed inset-y-0 left-0 z-50 w-72 max-w-[85%] uw-chrome-side text-white shadow-xl flex flex-col"
            style="padding-top: env(safe-area-inset-top); padding-bottom: env(safe-area-inset-bottom)">
         <div class="flex items-center justify-between gap-3 px-5 h-16 shrink-0 border-b border-white/10">
             @include('shared-ui::workbench.brand', ['logoClass' => 'h-10'])
@@ -35,7 +35,7 @@
 
         @if ($nav)
             <nav class="flex-1 overflow-y-auto px-3 py-4 space-y-1">
-                @if (config('shared-ui.portal_url'))
+                @if (config('shared-ui.portal_url') && ! config('shared-ui.portal'))
                     <div class="pb-2 mb-2 border-b border-white/10">
                         @include('shared-ui::workbench.portal-link')
                     </div>

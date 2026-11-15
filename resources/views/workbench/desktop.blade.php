@@ -49,7 +49,7 @@
 </style>
 <div x-data="{ drawer: false, navCollapsed: uwNav.collapsed() }" @keydown.escape.window="drawer = false" class="min-h-screen flex flex-col">
     <!-- Top bar -->
-    <header class="sticky top-0 z-30 bg-zinc-900 text-white" style="padding-top: env(safe-area-inset-top)">
+    <header class="sticky top-0 z-30 uw-chrome-top text-white" style="padding-top: env(safe-area-inset-top)">
         {{-- Sized by native app wrappers whose status bar overlaps the page (see the app's JS) --}}
         <div id="main-nav-filler"></div>
         <div class="h-16 flex items-center">
@@ -91,9 +91,9 @@
     <div class="flex-1 flex">
         @if ($nav)
         <!-- Sidebar / drawer (the column keeps the dark background down long pages) -->
-        <div data-nav-column class="lg:w-60 lg:shrink-0 lg:bg-zinc-900">
+        <div data-nav-column class="lg:w-60 lg:shrink-0 uw-chrome-side-lg">
         <aside data-nav-aside :class="drawer ? 'translate-x-0' : '-translate-x-full'"
-               class="fixed inset-y-0 left-0 z-40 w-64 max-w-[85%] -translate-x-full bg-zinc-900 text-white lg:border-t lg:border-white/10 flex flex-col transition-transform duration-200 ease-in-out lg:sticky lg:top-16 lg:h-[calc(100vh-4rem)] lg:max-w-none lg:translate-x-0 lg:shrink-0"
+               class="fixed inset-y-0 left-0 z-40 w-64 max-w-[85%] -translate-x-full uw-chrome-side text-white lg:border-t lg:border-white/10 flex flex-col transition-transform duration-200 ease-in-out lg:sticky lg:top-16 lg:h-[calc(100vh-4rem)] lg:max-w-none lg:translate-x-0 lg:shrink-0"
                style="padding-top: env(safe-area-inset-top); padding-bottom: env(safe-area-inset-bottom)">
             <div class="lg:hidden flex items-center justify-between gap-3 px-5 h-16 shrink-0 border-b border-white/10">
                 @include('shared-ui::workbench.brand', ['logoClass' => 'h-10'])
@@ -104,14 +104,12 @@
 
             <div class="lg:hidden">
                 @include('shared-ui::workbench.user-card')
-                <div class="sm:hidden px-3 py-2 border-b border-white/10">
-                    @include('shared-ui::workbench.organization')
-                </div>
+                <div class="sm:hidden px-3 py-2 border-b border-white/10 empty:hidden">@include('shared-ui::workbench.organization')</div>
             </div>
 
             <nav data-nav-pad class="flex-1 overflow-y-auto px-3 py-4 space-y-1">
-                @if (config('shared-ui.portal_url'))
-                    {{-- A client app: Return to Workbench heads its menu --}}
+                @if (config('shared-ui.portal_url') && ! config('shared-ui.portal'))
+                    {{-- A client app: Return to Workbench heads its menu (not in a portal: it's its own place) --}}
                     <div class="pb-2 mb-2 border-b border-white/10">
                         @include('shared-ui::workbench.portal-link')
                     </div>

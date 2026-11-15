@@ -1,7 +1,6 @@
-{{-- A portal's Branding screen ($brand: title, primary_color, secondary_color, accent_color, icon, customer_icon, icon_image_url, customer_icon_image_url) --}}
+{{-- A portal's Branding screen ($brand: title, palette, icon, customer_icon, icon_image_url, customer_icon_image_url) --}}
 @php
     $icons = ['fa-building', 'fa-handshake', 'fa-store', 'fa-briefcase', 'fa-truck', 'fa-box', 'fa-wrench', 'fa-screwdriver-wrench', 'fa-hard-hat', 'fa-industry', 'fa-warehouse', 'fa-leaf', 'fa-heart', 'fa-star', 'fa-bolt', 'fa-shield-halved', 'fa-graduation-cap', 'fa-stethoscope', 'fa-utensils', 'fa-car', 'fa-house', 'fa-globe', 'fa-chart-line', 'fa-users'];
-    $colors = ['primary_color' => __('Primary colour'), 'secondary_color' => __('Secondary colour'), 'accent_color' => __('Accent colour')];
     // Each icon, and the picture that can be uploaded in its place
     $iconFields = [
         'icon' => ['label' => __('Portal icon'), 'description' => __('Your own tile on the home page, and the top left corner inside the portal.'), 'image' => 'icon_image'],
@@ -22,15 +21,32 @@
                 <x-input-error :messages="$errors->get('title')" class="mt-2" />
             </x-card>
 
-            <x-card :title="__('Colours')" :description="__('How your portal looks to you and your customers.')">
-                <div class="grid gap-4 sm:grid-cols-3">
-                    @foreach ($colors as $key => $label)
-                        <div>
-                            <x-input-label :for="$key" :value="$label" />
-                            <input id="{{ $key }}" name="{{ $key }}" type="color" value="{{ old($key, $brand[$key] ?? '#2563eb') }}" class="mt-1 h-10 w-full rounded border border-zinc-300">
-                        </div>
+            <x-card :title="__('Colour palette')" :description="__('The top bar, the left menu and the buttons in your portal. Pick the one that best matches your company.')">
+                @php $chosen = old('palette', $brand['palette'] ?? ($palettes[0]['id'] ?? null)); @endphp
+                <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                    @foreach ($palettes as $palette)
+                        <label class="block cursor-pointer rounded-lg border border-zinc-200 p-2 has-[:checked]:border-bt_primary-500 has-[:checked]:ring-2 has-[:checked]:ring-bt_primary-500">
+                            <input type="radio" name="palette" value="{{ $palette['id'] }}" class="sr-only" @checked($chosen === $palette['id'])>
+                            {{-- A small picture of the portal in this palette: top bar, left menu, a button and a link --}}
+                            <span class="block overflow-hidden rounded-md border border-zinc-200 bg-zinc-100" aria-hidden="true">
+                                <span class="block h-3" style="background-color: {{ $palette['top'] }}"></span>
+                                <span class="flex h-16">
+                                    <span class="w-1/4 p-1 space-y-1" style="background-color: {{ $palette['side'] }}">
+                                        <span class="block h-1.5 rounded-sm" style="background-color: {{ $palette['button'] }}"></span>
+                                        <span class="block h-1.5 rounded-sm bg-white/25"></span>
+                                        <span class="block h-1.5 rounded-sm bg-white/25"></span>
+                                    </span>
+                                    <span class="flex-1 p-2 space-y-1.5">
+                                        <span class="block h-2 w-2/3 rounded-sm bg-zinc-300"></span>
+                                        <span class="inline-block rounded px-2 py-0.5 text-[9px] font-semibold text-white" style="background-color: {{ $palette['button'] }}">{{ __('Button') }}</span>
+                                    </span>
+                                </span>
+                            </span>
+                            <span class="mt-2 block text-sm font-medium text-zinc-800">{{ $palette['name'] }}</span>
+                        </label>
                     @endforeach
                 </div>
+                <x-input-error :messages="$errors->get('palette')" class="mt-2" />
             </x-card>
 
             @foreach ($iconFields as $key => $field)

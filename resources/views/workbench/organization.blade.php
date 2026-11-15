@@ -6,7 +6,8 @@
 --}}
 @php
     $resolver = config('shared-ui.organization');
-    $organization = $resolver && is_callable($resolver) ? call_user_func($resolver) : null;
+    // Not in a portal: whose it is comes from the portal (owner or customer), and there's nothing to switch
+    $organization = $resolver && is_callable($resolver) && ! config('shared-ui.portal') ? call_user_func($resolver) : null;
 @endphp
 @if ($organization && filled($organization['name'] ?? null))
     <div x-data="{ open: false }" @click.outside="open = false" class="relative min-w-0">

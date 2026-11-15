@@ -83,19 +83,26 @@ class PortalController
 
     public function branding()
     {
-        return view('shared-ui::portal.branding', ['brand' => workbench()->portalBrand()]);
+        // Fresh from the account app (its palettes to pick from, and the look as saved), else what they signed in with
+        $response = $this->send($request, 'get', '/api/portal');
+
+        return view('shared-ui::portal.branding', [
+            'brand' => $response->successful() ? ($response->json('portal.branding') ?: workbench()->portalBrand()) : workbench()->portalBrand(),
+            'palettes' => $response->successful() ? $response->json('palettes', []) : [],
+        ]);
     }
 
     public function saveBranding(Request $request): RedirectResponse
     {
         $request->validate([
             'title' => ['nullable', 'string', 'max:40'],
+            'palette' => ['nullable', 'string', 'max:40'],
             'icon_image' => ['nullable', 'file', 'image', 'mimes:png,jpg,jpeg,gif,webp', 'max:2048'],
             'customer_icon_image' => ['nullable', 'file', 'image', 'mimes:png,jpg,jpeg,gif,webp', 'max:2048'],
         ], ['*' => __('Upload a PNG, JPG, GIF or WebP picture under 2 MB.')]);
 
         // Pictures go along as a multipart POST (a PUT body isn't read as one)
-        $fields = $request->only(['title', 'primary_color', 'secondary_color', 'accent_color', 'icon', 'customer_icon', 'remove_icon_image', 'remove_customer_icon_image']);
+        $fields = $request->only(['title', 'palette', 'icon', 'customer_icon', 'remove_icon_image', 'remove_customer_icon_image']);
         $pending = Http::withToken($this->token($request))->acceptJson()->timeout(30);
         foreach (['icon_image', 'customer_icon_image'] as $key) {
             if ($file = $request->file($key)) {
