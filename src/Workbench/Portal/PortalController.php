@@ -81,7 +81,7 @@ class PortalController
         return $this->done($this->send($request, 'delete', "/api/portal/customers/{$organization}"), __('Customer removed.'));
     }
 
-    public function branding()
+    public function branding(Request $request)
     {
         // Fresh from the account app (its palettes to pick from, and the look as saved), else what they signed in with
         $response = $this->send($request, 'get', '/api/portal');
