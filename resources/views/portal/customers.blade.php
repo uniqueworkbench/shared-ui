@@ -1,4 +1,6 @@
-{{-- A portal's Customers screen ($customers: organization_id, name, since; $invites: id, email, name, expires_at, customer?) --}}
+{{-- A portal's Customers screen: the owner's Customers from the account app, each in the portal, invited or neither
+     ($customers: id, name, account_number, contacts[name,email,is_primary], portal_status customer|invited|null, organization_id,
+     organization_name, since, invite{id,email,expires_at}; $page, $lastPage, $total, $search) --}}
 <x-workbench-layout :title="__('Customers')">
     <x-slot name="header">{{ __('Customers') }}</x-slot>
 
@@ -6,93 +8,108 @@
         @if (session('success'))<x-callout icon="fa-solid fa-check" :title="session('success')" />@endif
         @error('portal')<x-callout icon="fa-solid fa-triangle-exclamation" :title="$message" />@enderror
 
-        <x-card :title="__('Add one of your customers')" :description="__('Pick from your Customers in Unique Workbench. We email their contact a link; once they accept, they show on the customer\'s page there too.')">
-            <div x-data="{
-                    q: '', results: [], busy: false, loaded: false, timer: null,
-                    search() {
-                        clearTimeout(this.timer);
-                        this.timer = setTimeout(async () => {
-                            this.busy = true;
-                            try {
-                                const r = await fetch(@js(route('portal.customers.search')) + '?q=' + encodeURIComponent(this.q), { headers: { Accept: 'application/json' } });
-                                this.results = r.ok ? await r.json() : [];
-                            } catch (e) { this.results = []; }
-                            this.busy = false; this.loaded = true;
-                        }, 250);
-                    }
-                }" x-init="search()">
-                <x-input-label for="customer-search" :value="__('Search by name, account number or contact')" />
-                <x-text-input id="customer-search" type="search" class="block mt-1 w-full" x-model="q" @input="search()" autocomplete="off" />
-                <p x-show="loaded && ! busy && results.length === 0" x-cloak class="mt-3 text-sm text-zinc-500">{{ __('No matching customers. Add them under Customers in Unique Workbench, or invite by email below.') }}</p>
-                <ul class="mt-3 divide-y divide-zinc-100" x-show="results.length" x-cloak>
-                    <template x-for="c in results" :key="c.id">
-                        <li class="flex flex-wrap items-center justify-between gap-3 py-2 text-sm">
-                            <span>
-                                <span class="font-medium" x-text="c.name"></span>
-                                <span class="text-zinc-400" x-show="c.account_number" x-text="'· ' + c.account_number"></span>
+        <x-card :title="__('Your customers')" :description="__('The same customers as in Unique Workbench. Invite the ones who should use this portal — we email their contact a link; they accept it for one of their organizations, or start a new one, and your portal appears under their Partner Portals.')">
+            <form method="GET" action="{{ route('portal.customers') }}" class="flex gap-2">
+                <x-text-input name="q" type="search" class="block w-full" :value="$search" :placeholder="__('Search by name, account number or contact')" />
+                <x-primary-button>{{ __('Search') }}</x-primary-button>
+            </form>
+
+            <div class="mt-4">
+                @forelse ($customers as $customer)
+                    <div class="flex flex-wrap items-center justify-between gap-3 py-3 text-sm border-b border-zinc-100 last:border-0">
+                        <div class="min-w-0">
+                            <span class="font-medium">{{ $customer['name'] }}</span>
+                            @if ($customer['account_number'])<span class="text-zinc-400">· {{ $customer['account_number'] }}</span>@endif
+                            <div class="text-xs text-zinc-500 truncate">
+                                @if ($customer['portal_status'] === 'customer')
+                                    {{ __('In the portal as :name since :date', ['name' => $customer['organization_name'], 'date' => $customer['since']]) }}
+                                @elseif ($customer['portal_status'] === 'invited')
+                                    {{ __('Invited at :email — expires :date', ['email' => $customer['invite']['email'], 'date' => $customer['invite']['expires_at']]) }}
+                                @elseif (count($customer['contacts']))
+                                    {{ collect($customer['contacts'])->pluck('email')->join(', ') }}
+                                @else
+                                    {{ __('No contact with an email address — add one to this customer in Unique Workbench.') }}
+                                @endif
+                            </div>
+                        </div>
+
+                        @if ($customer['portal_status'] === 'customer')
+                            <span class="flex items-center gap-3">
+                                <span class="rounded-full bg-green-100 px-2 py-0.5 text-xs font-medium text-green-800">{{ __('In the portal') }}</span>
+                                <form method="POST" action="{{ route('portal.customers.destroy', $customer['organization_id']) }}" onsubmit="return confirm(@js(__('Remove :name from the portal?', ['name' => $customer['name']])))">
+                                    @csrf @method('DELETE')<button class="text-red-600 hover:text-red-800">{{ __('Remove') }}</button>
+                                </form>
                             </span>
-                            <span x-show="c.portal_status === 'customer'" class="text-zinc-500">{{ __('Already a customer') }}<span x-show="c.portal_organization" x-text="' (' + c.portal_organization + ')'"></span></span>
-                            <span x-show="c.portal_status === 'invited'" class="text-zinc-500">{{ __('Invited — waiting for a reply') }}</span>
-                            <span x-show="! c.portal_status && c.contacts.length === 0" class="text-zinc-500">{{ __('No contact with an email address') }}</span>
-                            <form x-show="! c.portal_status && c.contacts.length" method="POST" action="{{ route('portal.invites.store') }}" class="flex items-center gap-2">
+                        @elseif ($customer['portal_status'] === 'invited')
+                            <span class="flex items-center gap-3">
+                                <span class="rounded-full bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-800">{{ __('Invited') }}</span>
+                                <form method="POST" action="{{ route('portal.invites.resend', $customer['invite']['id']) }}">@csrf<button class="text-bt_primary-600 hover:text-bt_primary-800">{{ __('Resend') }}</button></form>
+                                <form method="POST" action="{{ route('portal.invites.destroy', $customer['invite']['id']) }}">@csrf @method('DELETE')<button class="text-zinc-500 hover:text-zinc-800">{{ __('Withdraw') }}</button></form>
+                            </span>
+                        @elseif (count($customer['contacts']))
+                            <form method="POST" action="{{ route('portal.invites.store') }}" class="flex items-center gap-2">
                                 @csrf
-                                <input type="hidden" name="customer_id" :value="c.id">
-                                <select name="email" class="rounded-md border-zinc-300 text-sm py-1">
-                                    <template x-for="contact in c.contacts" :key="contact.email">
-                                        <option :value="contact.email" x-text="contact.name + ' <' + contact.email + '>'"></option>
-                                    </template>
-                                </select>
+                                <input type="hidden" name="customer_id" value="{{ $customer['id'] }}">
+                                @if (count($customer['contacts']) > 1)
+                                    <select name="email" class="rounded-md border-zinc-300 text-sm py-1" aria-label="{{ __('Invite at') }}">
+                                        @foreach ($customer['contacts'] as $contact)
+                                            <option value="{{ $contact['email'] }}">{{ $contact['name'] }} &lt;{{ $contact['email'] }}&gt;</option>
+                                        @endforeach
+                                    </select>
+                                @endif
                                 <x-primary-button>{{ __('Invite') }}</x-primary-button>
                             </form>
-                        </li>
-                    </template>
-                </ul>
+                        @endif
+                    </div>
+                @empty
+                    <p class="text-sm text-zinc-500">{{ $search !== '' ? __('No customers match that. Add one below.') : __('You have no customers yet. Add one below.') }}</p>
+                @endforelse
             </div>
+
+            @if ($lastPage > 1)
+                <div class="mt-4 flex items-center justify-between text-sm text-zinc-600">
+                    <span>{{ __('Page :page of :last · :total customers', ['page' => $page, 'last' => $lastPage, 'total' => $total]) }}</span>
+                    <span class="flex gap-4">
+                        @if ($page > 1)<a class="text-bt_primary-600 hover:text-bt_primary-800" href="{{ route('portal.customers', array_filter(['q' => $search, 'page' => $page - 1])) }}">{{ __('Previous') }}</a>@endif
+                        @if ($page < $lastPage)<a class="text-bt_primary-600 hover:text-bt_primary-800" href="{{ route('portal.customers', array_filter(['q' => $search, 'page' => $page + 1])) }}">{{ __('Next') }}</a>@endif
+                    </span>
+                </div>
+            @endif
         </x-card>
 
-        <x-card :title="__('Or invite by email')" :description="__('We email them a link. They accept it for one of their organizations — or start a new one — and your portal appears under their Partner Portals.')">
-            <form method="POST" action="{{ route('portal.invites.store') }}" class="grid gap-3 sm:grid-cols-[1fr_1fr_auto] items-start">
+        <x-card :title="__('Add a customer')" :description="__('Adds them to your Customers in Unique Workbench, with their first contact. You can invite them to this portal right away.')">
+            @error('new_customer')<x-callout icon="fa-solid fa-triangle-exclamation" :title="$message" class="mb-4" />@enderror
+            <form method="POST" action="{{ route('portal.customers.store') }}" class="grid gap-3 sm:grid-cols-2">
                 @csrf
+                <div class="sm:col-span-2">
+                    <x-input-label for="new-name" :value="__('Customer name')" />
+                    <x-text-input id="new-name" name="name" type="text" class="block mt-1 w-full" :value="old('name')" required />
+                    <x-input-error :messages="$errors->get('name')" class="mt-2" />
+                </div>
                 <div>
-                    <x-input-label for="email" :value="__('Email')" />
-                    <x-text-input id="email" name="email" type="email" class="block mt-1 w-full" :value="old('email')" required />
+                    <x-input-label for="new-first" :value="__('Contact first name')" />
+                    <x-text-input id="new-first" name="first_name" type="text" class="block mt-1 w-full" :value="old('first_name')" required />
+                    <x-input-error :messages="$errors->get('first_name')" class="mt-2" />
+                </div>
+                <div>
+                    <x-input-label for="new-last" :value="__('Contact last name')" />
+                    <x-text-input id="new-last" name="last_name" type="text" class="block mt-1 w-full" :value="old('last_name')" />
+                </div>
+                <div>
+                    <x-input-label for="new-email" :value="__('Contact email')" />
+                    <x-text-input id="new-email" name="email" type="email" class="block mt-1 w-full" :value="old('email')" />
                     <x-input-error :messages="$errors->get('email')" class="mt-2" />
                 </div>
                 <div>
-                    <x-input-label for="name" :value="__('Name (optional)')" />
-                    <x-text-input id="name" name="name" type="text" class="block mt-1 w-full" :value="old('name')" />
+                    <x-input-label for="new-phone" :value="__('Contact phone (optional)')" />
+                    <x-text-input id="new-phone" name="phone" type="text" class="block mt-1 w-full" :value="old('phone')" />
                 </div>
-                <x-primary-button class="sm:mt-6">{{ __('Send invitation') }}</x-primary-button>
+                <label class="sm:col-span-2 flex items-center gap-2 text-sm text-zinc-700">
+                    <input type="checkbox" name="invite" value="1" class="rounded border-zinc-300 text-bt_primary-600 focus:ring-bt_primary-500" @checked(old('invite', true))>
+                    {{ __('Invite them to this portal now (needs an email)') }}
+                </label>
+                <div class="sm:col-span-2"><x-primary-button>{{ __('Add customer') }}</x-primary-button></div>
             </form>
-        </x-card>
-
-        @if (count($invites))
-            <x-card :title="__('Waiting for a reply')">
-                <ul class="divide-y divide-zinc-100">
-                    @foreach ($invites as $invite)
-                        <li class="flex flex-wrap items-center justify-between gap-3 py-2 text-sm">
-                            <span>{{ $invite['name'] ? $invite['name'] . ' · ' : '' }}{{ $invite['email'] }}@if (! empty($invite['customer'])) <span class="text-zinc-400">· {{ $invite['customer']['name'] }}</span>@endif <span class="text-zinc-400">· {{ __('expires :date', ['date' => $invite['expires_at']]) }}</span></span>
-                            <span class="flex gap-3">
-                                <form method="POST" action="{{ route('portal.invites.resend', $invite['id']) }}">@csrf<button class="text-bt_primary-600 hover:text-bt_primary-800">{{ __('Resend') }}</button></form>
-                                <form method="POST" action="{{ route('portal.invites.destroy', $invite['id']) }}">@csrf @method('DELETE')<button class="text-zinc-500 hover:text-zinc-800">{{ __('Withdraw') }}</button></form>
-                            </span>
-                        </li>
-                    @endforeach
-                </ul>
-            </x-card>
-        @endif
-
-        <x-card :title="__('Your customers')">
-            @forelse ($customers as $customer)
-                <div class="flex items-center justify-between gap-3 py-2 text-sm border-b border-zinc-100 last:border-0">
-                    <span>{{ $customer['name'] }}@if (! empty($customer['customer']) && $customer['customer']['name'] !== $customer['name']) <span class="text-zinc-400">({{ $customer['customer']['name'] }})</span>@endif <span class="text-zinc-400">· {{ __('since :date', ['date' => $customer['since']]) }}</span></span>
-                    <form method="POST" action="{{ route('portal.customers.destroy', $customer['organization_id']) }}" onsubmit="return confirm(@js(__('Remove :name as a customer?', ['name' => $customer['name']])))">
-                        @csrf @method('DELETE')<button class="text-red-600 hover:text-red-800">{{ __('Remove') }}</button>
-                    </form>
-                </div>
-            @empty
-                <p class="text-sm text-zinc-500">{{ __('No customers yet.') }}</p>
-            @endforelse
         </x-card>
     </div>
 </x-workbench-layout>

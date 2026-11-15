@@ -10,7 +10,7 @@ use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
 /**
- * A portal's built-in screens for its owners: customers (pick one from the account app's Customers or invite by email, resend, withdraw, remove) and
+ * A portal's built-in screens for its owners: customers (the owner's Customers from the account app, each invited or not; add a new one, resend, withdraw, remove) and
  * branding (colours and icons). The data is the account app's; this calls its /api/portal with the
  * signed-in user's own token (sso_access_token on the app's users).
  */
@@ -18,7 +18,7 @@ class PortalController
 {
     public function customers(Request $request)
     {
-        $response = $this->send($request, 'get', '/api/portal');
+        $response = $this->send($request, 'get', '/api/portal/customers', array_filter(['q' => trim((string) $request->query('q')), 'page' => $request->query('page')], fn ($value) => filled($value)));
         if ($response->failed()) {
             Log::warning('Portal API failed', ['status' => $response->status()]);
             abort($response->status() === 403 ? 403 : 502, __('The portal could not be reached. Try again.'));
@@ -26,31 +26,41 @@ class PortalController
 
         return view('shared-ui::portal.customers', [
             'customers' => $response->json('customers', []),
-            'invites' => $response->json('invites', []),
+            'page' => (int) $response->json('page', 1),
+            'lastPage' => (int) $response->json('last_page', 1),
+            'total' => (int) $response->json('total', 0),
+            'search' => trim((string) $request->query('q')),
         ]);
     }
 
+    /** A new customer: added to the owner's Customers in the account app (with its first contact), and optionally invited */
+    public function storeCustomer(Request $request): RedirectResponse
+    {
+        $validated = $request->validate([
+            'name' => ['required', 'string', 'max:255'],
+            'first_name' => ['required', 'string', 'max:255'],
+            'last_name' => ['nullable', 'string', 'max:255'],
+            'email' => ['nullable', 'email', 'max:255'],
+            'phone' => ['nullable', 'string', 'max:50'],
+            'invite' => ['nullable', 'boolean'],
+        ]);
+        $response = $this->send($request, 'post', '/api/portal/customers', array_filter($validated, fn ($value) => filled($value)) + ['invite' => $request->boolean('invite')]);
+        if ($response->successful() && $response->json('invite_error')) {
+            return back()->with('success', __(':name was added to your Customers, but not invited: :why', ['name' => $validated['name'], 'why' => $response->json('invite_error')]));
+        }
+
+        return $this->done($response, $request->boolean('invite')
+            ? __(':name was added to your Customers and invited.', ['name' => $validated['name']])
+            : __(':name was added to your Customers.', ['name' => $validated['name']]), 'new_customer');
+    }
+
+    /** Invite one of the owner's Customers (customer_id) at one of its contacts' emails */
     public function invite(Request $request): RedirectResponse
     {
-        // Either one of the owner's own customers from the account app's directory (customer_id; it's invited at the
-        // chosen contact's email) or just an email
-        $validated = $request->validate([
-            'customer_id' => ['nullable', 'integer'],
-            'email' => [$request->filled('customer_id') ? 'nullable' : 'required', 'email', 'max:255'],
-            'name' => ['nullable', 'string', 'max:255'],
-        ]);
+        $validated = $request->validate(['customer_id' => ['required', 'integer'], 'email' => ['nullable', 'email', 'max:255']]);
         $response = $this->send($request, 'post', '/api/portal/invites', array_filter($validated, fn ($value) => filled($value)));
-        $sentTo = $response->json('invite.email') ?: ($validated['email'] ?? '');
 
-        return $this->done($response, __('Invitation sent to :email.', ['email' => $sentTo]), $request->filled('customer_id') ? 'portal' : 'email');
-    }
-
-    /** The owner's own customers (the account app's directory) matching ?q=, for the picker on the Customers screen */
-    public function searchCustomers(Request $request): JsonResponse
-    {
-        $response = $this->send($request, 'get', '/api/portal/customers/search', ['q' => (string) $request->query('q')]);
-
-        return response()->json($response->successful() ? $response->json() : [], $response->successful() ? 200 : 502);
+        return $this->done($response, __('Invitation sent to :email.', ['email' => $response->json('invite.email')]));
     }
 
     public function resend(Request $request, int $invite): RedirectResponse
