@@ -1,6 +1,6 @@
 {{-- A portal's Customers screen: the owner's Customers from the account app, each in the portal, invited or neither
-     ($customers: id, name, account_number, contacts[name,email,is_primary], portal_status customer|invited|null, organization_id,
-     organization_name, since, invite{id,email,expires_at}; $page, $lastPage, $total, $search) --}}
+     ($customers: id, name, account_number, contacts[name,email,phone,is_primary], portal_status customer|invited|null, organization_id,
+     organization_name, since, invite{id,email,phone,sent_to,expires_at}; $page, $lastPage, $total, $search) --}}
 <x-workbench-layout :title="__('Customers')">
     <x-slot name="header">{{ __('Customers') }}</x-slot>
 
@@ -8,7 +8,7 @@
         @if (session('success'))<x-callout icon="fa-solid fa-check" :title="session('success')" />@endif
         @error('portal')<x-callout icon="fa-solid fa-triangle-exclamation" :title="$message" />@enderror
 
-        <x-card :title="__('Your customers')" :description="__('The same customers as in Unique Workbench. Invite the ones who should use this portal — we email their contact a link; they accept it for one of their organizations, or start a new one, and your portal appears under their Partner Portals.')">
+        <x-card :title="__('Your customers')" :description="__('The same customers as in Unique Workbench. Invite the ones who should use this portal — we email or text their contact a link; they accept it for one of their organizations, or start a new one, and your portal appears under their Partner Portals.')">
             <form method="GET" action="{{ route('portal.customers') }}" class="flex gap-2">
                 <x-text-input name="q" type="search" class="block w-full" :value="$search" :placeholder="__('Search by name, account number or contact')" />
                 <x-primary-button>{{ __('Search') }}</x-primary-button>
@@ -24,11 +24,11 @@
                                 @if ($customer['portal_status'] === 'customer')
                                     {{ __('In the portal as :name since :date', ['name' => $customer['organization_name'], 'date' => $customer['since']]) }}
                                 @elseif ($customer['portal_status'] === 'invited')
-                                    {{ __('Invited at :email — expires :date', ['email' => $customer['invite']['email'], 'date' => $customer['invite']['expires_at']]) }}
+                                    {{ __('Invited at :to — expires :date', ['to' => $customer['invite']['sent_to'], 'date' => $customer['invite']['expires_at']]) }}
                                 @elseif (count($customer['contacts']))
-                                    {{ collect($customer['contacts'])->pluck('email')->join(', ') }}
+                                    {{ collect($customer['contacts'])->flatMap(fn ($c) => [$c['email'], $c['phone'] ? preg_replace('/^(\d{3})(\d{3})(\d{4})$/', '($1) $2-$3', $c['phone']) : null])->filter()->unique()->join(', ') }}
                                 @else
-                                    {{ __('No contact with an email address — add one to this customer in Unique Workbench.') }}
+                                    {{ __('No contact with an email address or phone number — add one to this customer in Unique Workbench.') }}
                                 @endif
                             </div>
                         </div>
@@ -50,12 +50,19 @@
                             <form method="POST" action="{{ route('portal.invites.store') }}" class="flex items-center gap-2">
                                 @csrf
                                 <input type="hidden" name="customer_id" value="{{ $customer['id'] }}">
-                                @if (count($customer['contacts']) > 1)
-                                    <select name="email" class="rounded-md border-zinc-300 text-sm py-1" aria-label="{{ __('Invite at') }}">
-                                        @foreach ($customer['contacts'] as $contact)
-                                            <option value="{{ $contact['email'] }}">{{ $contact['name'] }} &lt;{{ $contact['email'] }}&gt;</option>
-                                        @endforeach
+                                @php
+                                    // Each contact's email (a link by email) and phone (a link by text) is a way to invite them
+                                    $ways = collect($customer['contacts'])->flatMap(fn ($c) => array_filter([
+                                        $c['email'] ? ['via' => 'email:' . $c['email'], 'label' => $c['name'] . ' · ' . $c['email'] . ' (' . __('email') . ')'] : null,
+                                        $c['phone'] ? ['via' => 'phone:' . $c['phone'], 'label' => $c['name'] . ' · ' . preg_replace('/^(\d{3})(\d{3})(\d{4})$/', '($1) $2-$3', $c['phone']) . ' (' . __('text') . ')'] : null,
+                                    ]))->values();
+                                @endphp
+                                @if ($ways->count() > 1)
+                                    <select name="via" class="rounded-md border-zinc-300 text-sm py-1" aria-label="{{ __('Invite by') }}">
+                                        @foreach ($ways as $way)<option value="{{ $way['via'] }}">{{ $way['label'] }}</option>@endforeach
                                     </select>
+                                @else
+                                    <input type="hidden" name="via" value="{{ $ways->first()['via'] }}">
                                 @endif
                                 <x-primary-button>{{ __('Invite') }}</x-primary-button>
                             </form>
@@ -106,7 +113,7 @@
                 </div>
                 <label class="sm:col-span-2 flex items-center gap-2 text-sm text-zinc-700">
                     <input type="checkbox" name="invite" value="1" class="rounded border-zinc-300 text-bt_primary-600 focus:ring-bt_primary-500" @checked(old('invite', true))>
-                    {{ __('Invite them to this portal now (needs an email)') }}
+                    {{ __('Invite them to this portal now (by email, or by text if only a phone is given)') }}
                 </label>
                 <div class="sm:col-span-2"><x-primary-button>{{ __('Add customer') }}</x-primary-button></div>
             </form>

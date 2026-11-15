@@ -57,10 +57,13 @@ class PortalController
     /** Invite one of the owner's Customers (customer_id) at one of its contacts' emails */
     public function invite(Request $request): RedirectResponse
     {
-        $validated = $request->validate(['customer_id' => ['required', 'integer'], 'email' => ['nullable', 'email', 'max:255']]);
-        $response = $this->send($request, 'post', '/api/portal/invites', array_filter($validated, fn ($value) => filled($value)));
+        $validated = $request->validate(['customer_id' => ['required', 'integer'], 'via' => ['nullable', 'string', 'max:300']]);
+        // `via` is the channel picked: email:a@b.com or phone:5551234567 (none: the account app picks the primary contact's)
+        [$kind, $value] = array_pad(explode(':', (string) ($validated['via'] ?? ''), 2), 2, null);
+        $data = ['customer_id' => $validated['customer_id']] + (in_array($kind, ['email', 'phone'], true) && filled($value) ? [$kind => $value] : []);
+        $response = $this->send($request, 'post', '/api/portal/invites', $data);
 
-        return $this->done($response, __('Invitation sent to :email.', ['email' => $response->json('invite.email')]));
+        return $this->done($response, __('Invitation sent to :to.', ['to' => $response->json('invite.sent_to')]));
     }
 
     public function resend(Request $request, int $invite): RedirectResponse
