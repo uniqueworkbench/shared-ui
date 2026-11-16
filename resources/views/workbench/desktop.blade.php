@@ -53,7 +53,8 @@
         {{-- Sized by native app wrappers whose status bar overlaps the page (see the app's JS) --}}
         <div id="main-nav-filler"></div>
         <div class="h-16 flex items-center">
-            <div class="h-full flex items-center gap-2 px-3 sm:px-5 lg:w-60 lg:shrink-0 lg:px-6">
+            {{-- The sidebar's width, but in a portal as wide as the owner's title needs (nothing else is in the way, so it isn't cut off) --}}
+            <div @class(['h-full flex items-center gap-2 px-3 sm:px-5 lg:shrink-0 lg:px-6', 'lg:w-60' => ! config('shared-ui.portal'), 'lg:min-w-[15rem] lg:whitespace-nowrap' => config('shared-ui.portal')])>
                 @if ($nav)
                     <button type="button" @click="drawer = true" class="lg:hidden p-2 text-zinc-200 hover:text-white" aria-label="{{ __('Open menu') }}">
                         <i class="fa-solid fa-bars text-lg"></i>

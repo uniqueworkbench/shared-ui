@@ -40,6 +40,31 @@ class PortalTest extends TestCase
         $this->assertSame('', trim(view('shared-ui::workbench.mode-banners')->render()));
     }
 
+    public function test_a_portals_title_is_shown_in_full_not_truncated(): void
+    {
+        config(['shared-ui.portal' => true]);
+        $this->actingAs(new class extends \Illuminate\Foundation\Auth\User {
+            public $id = 1;
+            public $name = 'Pat';
+        });
+        $title = 'Test Pool Cover/Liner Manufacturer Portal Company';
+        workbench()->set(Workbench::fromSsoUser([
+            'organization_id' => 5, 'organization_role' => 'owner',
+            'portal' => ['role' => 'owner', 'owner' => ['id' => 5, 'name' => 'Acme'], 'branding' => ['title' => $title, 'primary_color' => '#112233']],
+        ]));
+
+        $html = view('shared-ui::workbench.brand')->render();
+
+        $this->assertStringContainsString($title, $html);
+        $this->assertMatchesRegularExpression('/<span[^>]*data-portal-title[^>]*>/', $html);
+        $this->assertDoesNotMatchRegularExpression('/<span[^>]*truncate[^>]*data-portal-title|<span[^>]*data-portal-title[^>]*truncate/', $html);
+
+        // In the desktop top bar its box grows with the title (min the sidebar's width) instead of being fixed at it
+        $bar = file_get_contents(__DIR__ . '/../resources/views/workbench/desktop.blade.php');
+        $this->assertStringContainsString("'lg:w-60' => ! config('shared-ui.portal')", $bar);
+        $this->assertStringContainsString("'lg:min-w-[15rem] lg:whitespace-nowrap' => config('shared-ui.portal')", $bar);
+    }
+
     public function test_the_portal_context_from_the_account_app_says_what_the_organization_is_to_it(): void
     {
         $context = Workbench::fromSsoUser([

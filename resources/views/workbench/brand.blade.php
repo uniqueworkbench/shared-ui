@@ -26,7 +26,8 @@
                 <i class="fa-solid {{ $portalBrand['icon'] ?? 'fa-building' }}"></i>
             @endif
         </span>
-        <span class="min-w-0 truncate text-base font-semibold">{{ $portalTitle }}</span>
+        {{-- The owner's title in full: a portal hides the organization switcher, so nothing competes for the room (wraps only where it's narrow: phone, drawer) --}}
+        <span class="min-w-0 text-base font-semibold leading-tight" data-portal-title>{{ $portalTitle }}</span>
     @elseif ($headerLogo)
         <img src="{{ $headerLogo }}" alt="{{ config('app.name') }}" class="h-9 w-auto min-w-0 max-w-full object-contain object-left">
     @elseif ($appIcon)
