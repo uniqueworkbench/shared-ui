@@ -40,6 +40,25 @@ class PortalTest extends TestCase
         $this->assertSame('', trim(view('shared-ui::workbench.mode-banners')->render()));
     }
 
+    public function test_a_portals_bottom_link_goes_back_to_the_workbench_instead_of_help(): void
+    {
+        config(['shared-ui.help' => ['label' => 'Help & Support', 'url' => 'https://account.example.test/support'], 'shared-ui.portal_url' => 'https://account.example.test']);
+
+        // An ordinary app keeps Help & Support
+        config(['shared-ui.portal' => false]);
+        $html = view('shared-ui::workbench.help-link')->render();
+        $this->assertStringContainsString('Help &amp; Support', $html);
+        $this->assertStringContainsString('https://account.example.test/support', $html);
+
+        // A portal says Unique Workbench and returns to it
+        config(['shared-ui.portal' => true]);
+        $html = view('shared-ui::workbench.help-link')->render();
+        $this->assertStringContainsString('Unique Workbench', $html);
+        $this->assertStringContainsString('href="https://account.example.test"', $html);
+        $this->assertStringContainsString('data-workbench-link', $html);
+        $this->assertStringNotContainsString('Help', $html);
+    }
+
     public function test_a_portals_title_is_shown_in_full_not_truncated(): void
     {
         config(['shared-ui.portal' => true]);
