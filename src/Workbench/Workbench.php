@@ -175,6 +175,16 @@ class Workbench
     }
 
     /**
+     * Where the workbench (the account app) is: the SSO URL, without a trailing slash. For links that must always lead there — a portal's
+     * "Unique Workbench", "Stop viewing as owner" — wherever the person is. It deliberately isn't `shared-ui.portal_url`, which an app
+     * may repoint for a section of its own (a module's "Return to…"), and so can't be trusted to be the workbench.
+     */
+    public function workbenchUrl(): string
+    {
+        return rtrim((string) (config('sso.base_url') ?: config('shared-ui.portal_url')), '/');
+    }
+
+    /**
      * A Super Admin viewing the portal as its owner, opened from the account app's Admin → Portals: like an impersonation, not
      * Admin Mode — they're treated as that owner's owner (role, permissions, organization) and a bar says so, with a way out
      * (resources/views/workbench/mode-banners). Admin Mode stays a separate switch in the user menu.

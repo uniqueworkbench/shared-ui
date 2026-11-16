@@ -30,6 +30,7 @@
     "
     @submit.window="if (!$event.defaultPrevented) open = true"
     @page-loading.window="open = true"
+    @page-loading-end.window="open = false"
 >
     <div x-show="open" x-cloak class="fixed inset-0 z-[60] flex items-center justify-center">
         <div class="bg-white rounded-lg shadow-xl flex flex-col items-center justify-center gap-4 p-8"

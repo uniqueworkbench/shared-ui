@@ -3,25 +3,33 @@
         open: false,
         title: '',
         message: '',
+        confirmLabel: 'Confirm',
+        loading: true,
         callback: null,
+        onCancel: null,
         show(event) {
             this.title   = event.detail.title   ?? 'Are you sure?';
             this.message = event.detail.message ?? '';
+            this.confirmLabel = event.detail.confirmLabel ?? 'Confirm';
+            // Most confirms lead to a page load (the overlay shows); one that doesn't (a script's uwConfirm) says loading: false
+            this.loading = event.detail.loading !== false;
             this.callback = event.detail.callback;
+            this.onCancel = event.detail.onCancel ?? null;
             this.open = true;
         },
         confirm() {
             this.open = false;
-            window.dispatchEvent(new CustomEvent('page-loading'));
+            this.loading && window.dispatchEvent(new CustomEvent('page-loading'));
             this.callback && this.callback();
         },
         cancel() {
             this.open = false;
+            this.onCancel && this.onCancel();
         }
     }"
     @confirm-action.window="show($event)"
 >
-    <div x-show="open" x-cloak class="fixed inset-0 z-50 flex items-center justify-center p-4"
+    <div x-show="open" x-cloak class="fixed inset-0 z-[70] flex items-center justify-center p-4"
          x-transition:enter="transition ease-out duration-200"
          x-transition:enter-start="opacity-0"
          x-transition:enter-end="opacity-100"
@@ -54,7 +62,7 @@
             </div>
             <div class="flex justify-end gap-3 px-6 py-4 bg-gray-50 rounded-b-lg">
                 <x-secondary-button @click="cancel()">Cancel</x-secondary-button>
-                <x-danger-button @click="confirm()">Confirm</x-danger-button>
+                <x-danger-button @click="confirm()"><span x-text="confirmLabel"></span></x-danger-button>
             </div>
         </div>
     </div>

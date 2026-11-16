@@ -36,7 +36,7 @@
                         @if ($customer['portal_status'] === 'customer')
                             <span class="flex items-center gap-3">
                                 <span class="rounded-full bg-green-100 px-2 py-0.5 text-xs font-medium text-green-800">{{ __('In the portal') }}</span>
-                                <form method="POST" action="{{ route('portal.customers.destroy', $customer['organization_id']) }}" onsubmit="return confirm(@js(__('Remove :name from the portal?', ['name' => $customer['name']])))">
+                                <form method="POST" action="{{ route('portal.customers.destroy', $customer['organization_id']) }}" data-confirm="{{ __('Remove :name from the portal?', ['name' => $customer['name']]) }}" data-confirm-button="{{ __('Remove') }}">
                                     @csrf @method('DELETE')<button class="text-red-600 hover:text-red-800">{{ __('Remove') }}</button>
                                 </form>
                             </span>

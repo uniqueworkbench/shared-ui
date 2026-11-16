@@ -48,6 +48,7 @@
         <x-page-loading/>
         <x-confirm-modal/>
         <x-prompt-modal/>
+        @include('shared-ui::workbench.dialogs')
         @stack('scripts')
     </body>
 </html>

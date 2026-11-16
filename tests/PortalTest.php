@@ -26,14 +26,16 @@ class PortalTest extends TestCase
 
     public function test_the_viewing_as_owner_bar_shows_only_then_with_a_way_out(): void
     {
-        config(['shared-ui.portal_url' => 'https://account.example.test']);
+        // An app may repoint portal_url (a module's "Return to…"); the way out always leads to the workbench
+        config(['shared-ui.portal_url' => 'https://elsewhere.example.test/dashboard']);
         $context = fn (array $portal) => Workbench::fromSsoUser(['organization_id' => 5, 'organization_role' => 'owner', 'portal' => $portal]);
 
         workbench()->set($context(['id' => 9, 'role' => 'owner', 'as_owner' => true, 'owner' => ['id' => 5, 'name' => 'Acme']]));
         $html = view('shared-ui::workbench.mode-banners')->render();
         $this->assertStringContainsString('data-portal-as-owner', $html);
         $this->assertStringContainsString("Acme's owner", html_entity_decode($html, ENT_QUOTES));
-        $this->assertStringContainsString('https://account.example.test/admin/portals/9/exit', $html);
+        $this->assertStringContainsString('https://account.test/admin/portals/9/exit', $html);
+        $this->assertStringNotContainsString('elsewhere.example.test', $html);
         $this->assertStringNotContainsString('data-admin-mode-bar', $html); // not Admin Mode
 
         workbench()->set($context(['id' => 9, 'role' => 'owner', 'as_owner' => false, 'owner' => ['id' => 5, 'name' => 'Acme']]));
@@ -42,7 +44,7 @@ class PortalTest extends TestCase
 
     public function test_a_portals_bottom_link_goes_back_to_the_workbench_instead_of_help(): void
     {
-        config(['shared-ui.help' => ['label' => 'Help & Support', 'url' => 'https://account.example.test/support'], 'shared-ui.portal_url' => 'https://account.example.test']);
+        config(['shared-ui.help' => ['label' => 'Help & Support', 'url' => 'https://account.example.test/support'], 'shared-ui.portal_url' => 'https://account.example.test/dashboard']);
 
         // An ordinary app keeps Help & Support
         config(['shared-ui.portal' => false]);
@@ -54,7 +56,9 @@ class PortalTest extends TestCase
         config(['shared-ui.portal' => true]);
         $html = view('shared-ui::workbench.help-link')->render();
         $this->assertStringContainsString('Unique Workbench', $html);
-        $this->assertStringContainsString('href="https://account.example.test"', $html);
+        // The workbench (the SSO url) wherever the person is in the portal — not portal_url, which an app may repoint for a section
+        $this->assertStringContainsString('href="https://account.test"', $html);
+        $this->assertStringNotContainsString('account.example.test', $html);
         $this->assertStringContainsString('data-workbench-link', $html);
         $this->assertStringNotContainsString('Help', $html);
     }

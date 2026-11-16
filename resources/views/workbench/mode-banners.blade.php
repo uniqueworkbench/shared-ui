@@ -8,7 +8,7 @@
     @if (workbench()->portalAsOwner())
         @php
             $asOwner = workbench()->portalOwnerName();
-            $stopViewing = rtrim((string) config('shared-ui.portal_url'), '/') . '/admin/portals/' . (workbench()->portal()['id'] ?? 0) . '/exit';
+            $stopViewing = workbench()->workbenchUrl() . '/admin/portals/' . (workbench()->portal()['id'] ?? 0) . '/exit';
         @endphp
         <div data-portal-as-owner class="sticky top-0 z-20 bg-amber-50 text-amber-900 border-b border-amber-200 px-4 py-2 text-sm flex flex-wrap justify-center items-center gap-x-4 gap-y-1 sm:grid sm:grid-cols-[1fr_auto_1fr]">
             <span class="hidden sm:block"></span>

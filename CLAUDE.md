@@ -95,6 +95,13 @@ infrastructure (hard-abend error tracking, the Feature API key check) used acros
     show their `label`, the `actions` cell sits top right. Still too wide, it scrolls sideways with a shadow
     on the cut-off edge; `scroll` caps it at the screen's height so the header stays put and the scrollbar
     stays in view; `sticky-first` pins the first column. Needs Alpine ≥ 3.9 (`x-teleport`).
+- **Dialogs — never the browser's own `alert()` / `confirm()` / `prompt()`** (`resources/views/workbench/dialogs.blade.php`, included by
+  `<x-workbench-layout>` with `<x-confirm-modal>`, `<x-alert-modal>`, `<x-input-modal>`). Asking before a form is sent: `data-confirm="Delete this?"`
+  on the `<form>`, or on the submit button that needs it, plus optional `data-confirm-title` and `data-confirm-button` (the red button's label).
+  From a script (promises): `await window.uwConfirm(msg, {title, button})` → true/false, `await window.uwAlert(msg, {title})`,
+  `await window.uwPrompt(msg, {title, placeholder, value, required, button})` → the text or null. Alpine can dispatch the window events directly:
+  `confirm-action` ({title, message, confirmLabel, callback, onCancel, loading}), `alert-action`, `input-action`. The dialogs sit above the
+  page-loading overlay (z-70); `page-loading-end` dismisses that overlay. `tests/DialogsTest` fails any view that calls a native dialog.
 - **Dirty forms** (`resources/views/workbench/dirty-forms.blade.php`, included by `<x-workbench-layout>`):
   a `<form data-dirty-form>` starts with its Save (submit) buttons disabled; any change enables them (changing
   it back by hand disables them again). Its **Cancel is always enabled** and returns to the previous state: on a
@@ -255,6 +262,9 @@ infrastructure (hard-abend error tracking, the Feature API key check) used acros
   true — the account app's `portal.as_owner`): like an impersonation, **not** Admin Mode. The layouts show an amber "viewing as
   owner" bar (`workbench/mode-banners`, included above `@stack('banners')`) with **Stop viewing as owner** back to the account app.
   `portalOwnerId()` is null for a portal that has no owner — handle it.
+  In a portal the bottom of the menu is **Unique Workbench** (`workbench/help-link`), not Help & Support: it and the bar's way out use
+  `workbench()->workbenchUrl()` (the SSO URL), never `shared-ui.portal_url` — an app may repoint that for a section of its own, so a
+  portal's module can't hijack the way back to the workbench.
 
 ## Rules
 - No app-*specific* logic here — logic must be generic enough to apply to every

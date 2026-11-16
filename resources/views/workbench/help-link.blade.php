@@ -6,7 +6,7 @@
 @php
     if (config('shared-ui.portal')) {
         $help = ['label' => 'Unique Workbench'];
-        $href = config('shared-ui.portal_url');
+        $href = workbench()->workbenchUrl() ?: null; // always the workbench, wherever in the portal (never an app's repointed portal_url)
         $icon = 'fa-solid fa-arrow-left';
     } else {
         $help = config('shared-ui.help');
