@@ -57,6 +57,7 @@
         </div>
     </aside>
 
+    @include('shared-ui::workbench.portal-admin-banner')
     @stack('banners')
 
     @isset($breadcrumb)

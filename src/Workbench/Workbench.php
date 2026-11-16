@@ -169,6 +169,15 @@ class Workbench
         return $this->portal()['owner']['name'] ?? null;
     }
 
+    /**
+     * A Super Admin viewing the portal as its owner, opened from the account app's Admin → Portals: they're treated as that
+     * owner's owner (role, permissions, organization), and the Admin Mode bar shows (resources/views/workbench/portal-admin-banner)
+     */
+    public function portalAdminMode(): bool
+    {
+        return (bool) ($this->portal()['admin_mode'] ?? false);
+    }
+
     /** 'owner' or 'customer' — what the organization is to the portal — or null */
     public function portalRole(): ?string
     {

@@ -247,6 +247,9 @@ infrastructure (hard-abend error tracking, the Feature API key check) used acros
   organizations: `portalOwnerId()` / `portalOwnerName()` say whose portal this visit is (an owner's own organization; for a
   customer, the owner whose tile it opened), and `portalBrand()` is that owner's look. Key the portal's own data by
   `portalOwnerId()` and never show one owner's customers, data or branding to another.
+  A Super Admin who opened the portal from the account app's Admin → Portals is seen as that owner's owner with
+  `portalAdminMode()` true: the layouts show a red **Admin Mode** bar (`workbench/portal-admin-banner`, pushed above `@stack('banners')`)
+  with **Exit Admin Mode** back to the account app. `portalOwnerId()` is null for a portal that has no owner — handle it.
 
 ## Rules
 - No app-*specific* logic here — logic must be generic enough to apply to every

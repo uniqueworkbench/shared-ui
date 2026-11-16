@@ -6,6 +6,37 @@ use UniqueWorkbench\SharedUi\Workbench\Workbench;
 
 class PortalTest extends TestCase
 {
+    public function test_a_super_admins_view_as_the_owner_is_admin_mode(): void
+    {
+        $workbench = new Workbench(app('session.store'));
+        $workbench->set(Workbench::fromSsoUser([
+            'organization_id' => 5, 'organization_role' => 'owner',
+            'portal' => ['id' => 9, 'role' => 'owner', 'admin_mode' => true, 'owner' => ['id' => 5, 'name' => 'Acme']],
+        ]));
+        $this->assertTrue($workbench->portalAdminMode());
+        $this->assertTrue($workbench->isPortalOwner());
+
+        $workbench->set(Workbench::fromSsoUser(['organization_id' => 5, 'organization_role' => 'owner', 'portal' => ['role' => 'owner', 'admin_mode' => false]]));
+        $this->assertFalse($workbench->portalAdminMode());
+        $workbench->set(Workbench::fromSsoUser(['organization_id' => 5, 'organization_role' => 'owner']));
+        $this->assertFalse($workbench->portalAdminMode());
+    }
+
+    public function test_the_admin_mode_bar_shows_only_in_admin_mode_with_a_way_out(): void
+    {
+        config(['shared-ui.portal_url' => 'https://account.example.test']);
+        $context = fn (array $portal) => Workbench::fromSsoUser(['organization_id' => 5, 'organization_role' => 'owner', 'portal' => $portal]);
+
+        workbench()->set($context(['id' => 9, 'role' => 'owner', 'admin_mode' => true, 'owner' => ['id' => 5, 'name' => 'Acme']]));
+        $html = view('shared-ui::workbench.portal-admin-banner')->render();
+        $this->assertStringContainsString('data-portal-admin-mode', $html);
+        $this->assertStringContainsString("Acme's owner", html_entity_decode($html, ENT_QUOTES));
+        $this->assertStringContainsString('https://account.example.test/admin/portals/9/exit', $html);
+
+        workbench()->set($context(['id' => 9, 'role' => 'owner', 'admin_mode' => false, 'owner' => ['id' => 5, 'name' => 'Acme']]));
+        $this->assertSame('', trim(view('shared-ui::workbench.portal-admin-banner')->render()));
+    }
+
     public function test_the_portal_context_from_the_account_app_says_what_the_organization_is_to_it(): void
     {
         $context = Workbench::fromSsoUser([
