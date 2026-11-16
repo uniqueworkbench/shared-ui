@@ -25,12 +25,25 @@ class PortalController
         }
 
         return view('shared-ui::portal.customers', [
+            'allowAll' => (bool) $response->json('allow_all_customers', false),
             'customers' => $response->json('customers', []),
             'page' => (int) $response->json('page', 1),
             'lastPage' => (int) $response->json('last_page', 1),
             'total' => (int) $response->json('total', 0),
             'search' => trim((string) $request->query('q')),
         ]);
+    }
+
+    /** Who may use the portal: only the customers invited (option 1) or all of the owner's Customers (option 2) */
+    public function saveAccess(Request $request): RedirectResponse
+    {
+        $validated = $request->validate(['access' => ['required', 'in:invited,all']]);
+        $all = $validated['access'] === 'all';
+
+        return $this->done(
+            $this->send($request, 'put', '/api/portal/customer-access', ['allow_all_customers' => $all]),
+            $all ? __('All of your customers can now use this portal.') : __('Only the customers you invite can use this portal.'),
+        );
     }
 
     /** A new customer: added to the owner's Customers in the account app (with its first contact), and optionally invited */

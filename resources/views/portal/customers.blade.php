@@ -8,6 +8,21 @@
         @if (session('success'))<x-callout icon="fa-solid fa-check" :title="session('success')" />@endif
         @error('portal')<x-callout icon="fa-solid fa-triangle-exclamation" :title="$message" />@enderror
 
+        <x-card :title="__('Who can use this portal')" :description="__('Choose how your customers get in.')">
+            <form method="POST" action="{{ route('portal.customers.access') }}" class="space-y-3 text-sm">
+                @csrf @method('PUT')
+                <label class="flex items-start gap-2">
+                    <input type="radio" name="access" value="invited" class="mt-1 border-zinc-300 text-bt_primary-600 focus:ring-bt_primary-500" @checked(! $allowAll)>
+                    <span><span class="font-medium">{{ __('Only customers I invite') }}</span><br><span class="text-zinc-500">{{ __('Pick the customers below to invite; only they can use the portal.') }}</span></span>
+                </label>
+                <label class="flex items-start gap-2">
+                    <input type="radio" name="access" value="all" class="mt-1 border-zinc-300 text-bt_primary-600 focus:ring-bt_primary-500" @checked($allowAll)>
+                    <span><span class="font-medium">{{ __('All of my customers') }}</span><br><span class="text-zinc-500">{{ __('Anyone who is a contact of one of your Customers is offered the portal when they sign in — no invitation needed. Customers you add later are included.') }}</span></span>
+                </label>
+                <x-primary-button>{{ __('Save') }}</x-primary-button>
+            </form>
+        </x-card>
+
         <x-card :title="__('Your customers')" :description="__('The same customers as in Unique Workbench. Invite the ones who should use this portal — we email or text their contact a link; they accept it for one of their organizations, or start a new one, and your portal appears under their Partner Portals.')">
             <form method="GET" action="{{ route('portal.customers') }}" class="flex gap-2">
                 <x-text-input name="q" type="search" class="block w-full" :value="$search" :placeholder="__('Search by name, account number or contact')" />

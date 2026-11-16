@@ -129,6 +129,7 @@ class SharedUiServiceProvider extends ServiceProvider
                     $this->app['router']->middleware(['web', 'auth', 'workbench'])->prefix('portal')->group(function ($router) {
                         $router->middleware('can:' . Workbench::PORTAL_MANAGE_CUSTOMERS)->group(function ($router) {
                             $router->get('/customers', [PortalController::class, 'customers'])->name('portal.customers');
+                            $router->put('/customers/access', [PortalController::class, 'saveAccess'])->name('portal.customers.access');
                             $router->post('/customers', [PortalController::class, 'storeCustomer'])->name('portal.customers.store');
                             $router->post('/customers/invites', [PortalController::class, 'invite'])->name('portal.invites.store');
                             $router->post('/customers/invites/{invite}/resend', [PortalController::class, 'resend'])->name('portal.invites.resend');
