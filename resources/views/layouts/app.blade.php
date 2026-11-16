@@ -19,7 +19,7 @@
         <div class="min-h-screen bg-gray-100">
             @include('layouts.navigation')
 
-            @include('shared-ui::workbench.portal-admin-banner')
+            @include('shared-ui::workbench.mode-banners')
             @stack('banners')
 
             <!-- Page Breadcrumbs -->

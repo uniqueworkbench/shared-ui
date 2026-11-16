@@ -191,8 +191,12 @@ infrastructure (hard-abend error tracking, the Feature API key check) used acros
     at SSO sign-in (`Workbench::fromSsoUser`): organization, the person's contact there (`contactId()` — what
     apps key people by — and `contactType()`/`relationship()`, `isWorkforce()` from the account app's `is_workforce`,
     `customerIds()`/`vendorIds()`), role,
-    personas, units (`unitScopeIds()`/`canSeeUnit()`: their units and those below), visible locations, permissions (`can()`; `canEverywhere()`: ones a Super Admin gave them in every organization — the account app's `everywhere_permissions` — or they're a Super Admin; `grantedEverywhere()`: only the ones given them in every organization, Super Admin or not — for permissions declared `'everywhere_only' => true` in config/workbench.php, e.g. the app's own Admin Mode, which organizations' owners never get and whose gate uses it), app settings, and the
-    user's and organization's pictures (`avatarUrl()` / `organizationAvatarUrl()`,
+    personas, units (`unitScopeIds()`/`canSeeUnit()`: their units and those below), visible locations, permissions (`can()`; `canEverywhere()`: ones a Super Admin gave them in every organization — the account app's `everywhere_permissions` — or they're a Super Admin; `grantedEverywhere()`: only the ones given them in every organization, Super Admin or not — for permissions declared `'everywhere_only' => true` in config/workbench.php, e.g. the app's own Admin Mode, which organizations' owners never get and whose gate uses it), app settings,
+    **Admin Mode**: the account app's `is_admin` only makes a Super Admin *eligible* (`isAdminEligible()`). `isAdmin()` — and so `isOwner()`,
+    `can()` and `canEverywhere()` — is true only while Admin Mode is on in this app's session (`adminMode()`, `setAdminMode()`;
+    session key `Workbench::ADMIN_MODE_KEY`): **off at every sign-in**, whatever it was in the account app, and switched from the user menu
+    (**Enter / Exit Admin Mode**, POST `workbench.admin-mode` → `AdminModeController`, apps with a `config/workbench.php`), which also shows the
+    red Admin Mode bar (`workbench/mode-banners`). Check `workbench()->isAdmin()` in app code, never the local `users.is_admin` column. Also the user's and organization's pictures (`avatarUrl()` / `organizationAvatarUrl()`,
     which the top bar shows — the user's only when the app's user model has no `avatar_url`).
   - `EnsureWorkbenchContext` (alias `workbench`; apps append it to `web`): a
     signed-in session without a context — or with one from before it carried `contact_id` (`isCurrent()`) —
@@ -247,9 +251,10 @@ infrastructure (hard-abend error tracking, the Feature API key check) used acros
   organizations: `portalOwnerId()` / `portalOwnerName()` say whose portal this visit is (an owner's own organization; for a
   customer, the owner whose tile it opened), and `portalBrand()` is that owner's look. Key the portal's own data by
   `portalOwnerId()` and never show one owner's customers, data or branding to another.
-  A Super Admin who opened the portal from the account app's Admin → Portals is seen as that owner's owner with
-  `portalAdminMode()` true: the layouts show a red **Admin Mode** bar (`workbench/portal-admin-banner`, pushed above `@stack('banners')`)
-  with **Exit Admin Mode** back to the account app. `portalOwnerId()` is null for a portal that has no owner — handle it.
+  A Super Admin who opened the portal from the account app's Admin → Portals is seen as that owner's owner (`portalAsOwner()`
+  true — the account app's `portal.as_owner`): like an impersonation, **not** Admin Mode. The layouts show an amber "viewing as
+  owner" bar (`workbench/mode-banners`, included above `@stack('banners')`) with **Stop viewing as owner** back to the account app.
+  `portalOwnerId()` is null for a portal that has no owner — handle it.
 
 ## Rules
 - No app-*specific* logic here — logic must be generic enough to apply to every

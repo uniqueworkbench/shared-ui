@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\Gate;
 use UniqueWorkbench\SharedUi\FeatureApi\VerifyConnectionToken;
 use UniqueWorkbench\SharedUi\FeatureApi\VerifyFeatureApiKey;
 use UniqueWorkbench\SharedUi\Mail\WorkbenchMailTransport;
+use UniqueWorkbench\SharedUi\Workbench\AdminModeController;
 use UniqueWorkbench\SharedUi\Workbench\Connections;
 use UniqueWorkbench\SharedUi\Workbench\Directory;
 use UniqueWorkbench\SharedUi\Workbench\DirectoryChangedController;
@@ -77,6 +78,10 @@ class SharedUiServiceProvider extends ServiceProvider
 
             $this->app->booted(function () {
                 if (! $this->app->routesAreCached()) {
+                    // A Super Admin turns Admin Mode on or off here, from the user menu (off at every sign-in)
+                    $this->app['router']->middleware(['web', 'auth', 'workbench'])
+                        ->post('/workbench/admin-mode', [AdminModeController::class, 'update'])
+                        ->name('workbench.admin-mode');
                     // The account app says an organization's shared directory changed: drop the cached copies
                     $this->app['router']->middleware(['api', 'feature-api', 'throttle:120,1'])
                         ->post('/api/features/directory-changed', DirectoryChangedController::class)

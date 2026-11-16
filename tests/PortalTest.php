@@ -6,35 +6,38 @@ use UniqueWorkbench\SharedUi\Workbench\Workbench;
 
 class PortalTest extends TestCase
 {
-    public function test_a_super_admins_view_as_the_owner_is_admin_mode(): void
+    public function test_a_super_admins_view_as_the_owner_is_like_an_impersonation_not_admin_mode(): void
     {
         $workbench = new Workbench(app('session.store'));
         $workbench->set(Workbench::fromSsoUser([
-            'organization_id' => 5, 'organization_role' => 'owner',
-            'portal' => ['id' => 9, 'role' => 'owner', 'admin_mode' => true, 'owner' => ['id' => 5, 'name' => 'Acme']],
+            'organization_id' => 5, 'organization_role' => 'owner', 'is_admin' => true,
+            'portal' => ['id' => 9, 'role' => 'owner', 'as_owner' => true, 'owner' => ['id' => 5, 'name' => 'Acme']],
         ]));
-        $this->assertTrue($workbench->portalAdminMode());
+        $this->assertTrue($workbench->portalAsOwner());
         $this->assertTrue($workbench->isPortalOwner());
+        // It isn't Admin Mode: that's the separate switch, still off
+        $this->assertFalse($workbench->isAdmin());
 
-        $workbench->set(Workbench::fromSsoUser(['organization_id' => 5, 'organization_role' => 'owner', 'portal' => ['role' => 'owner', 'admin_mode' => false]]));
-        $this->assertFalse($workbench->portalAdminMode());
+        $workbench->set(Workbench::fromSsoUser(['organization_id' => 5, 'organization_role' => 'owner', 'portal' => ['role' => 'owner', 'as_owner' => false]]));
+        $this->assertFalse($workbench->portalAsOwner());
         $workbench->set(Workbench::fromSsoUser(['organization_id' => 5, 'organization_role' => 'owner']));
-        $this->assertFalse($workbench->portalAdminMode());
+        $this->assertFalse($workbench->portalAsOwner());
     }
 
-    public function test_the_admin_mode_bar_shows_only_in_admin_mode_with_a_way_out(): void
+    public function test_the_viewing_as_owner_bar_shows_only_then_with_a_way_out(): void
     {
         config(['shared-ui.portal_url' => 'https://account.example.test']);
         $context = fn (array $portal) => Workbench::fromSsoUser(['organization_id' => 5, 'organization_role' => 'owner', 'portal' => $portal]);
 
-        workbench()->set($context(['id' => 9, 'role' => 'owner', 'admin_mode' => true, 'owner' => ['id' => 5, 'name' => 'Acme']]));
-        $html = view('shared-ui::workbench.portal-admin-banner')->render();
-        $this->assertStringContainsString('data-portal-admin-mode', $html);
+        workbench()->set($context(['id' => 9, 'role' => 'owner', 'as_owner' => true, 'owner' => ['id' => 5, 'name' => 'Acme']]));
+        $html = view('shared-ui::workbench.mode-banners')->render();
+        $this->assertStringContainsString('data-portal-as-owner', $html);
         $this->assertStringContainsString("Acme's owner", html_entity_decode($html, ENT_QUOTES));
         $this->assertStringContainsString('https://account.example.test/admin/portals/9/exit', $html);
+        $this->assertStringNotContainsString('data-admin-mode-bar', $html); // not Admin Mode
 
-        workbench()->set($context(['id' => 9, 'role' => 'owner', 'admin_mode' => false, 'owner' => ['id' => 5, 'name' => 'Acme']]));
-        $this->assertSame('', trim(view('shared-ui::workbench.portal-admin-banner')->render()));
+        workbench()->set($context(['id' => 9, 'role' => 'owner', 'as_owner' => false, 'owner' => ['id' => 5, 'name' => 'Acme']]));
+        $this->assertSame('', trim(view('shared-ui::workbench.mode-banners')->render()));
     }
 
     public function test_the_portal_context_from_the_account_app_says_what_the_organization_is_to_it(): void

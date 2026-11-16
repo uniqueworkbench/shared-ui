@@ -17,7 +17,8 @@ use Illuminate\Support\Facades\Log;
  *
  * Use it through the `workbench()` helper or by injecting it:
  *   workbench()->organizationId()        every query on app data filters by it (BelongsToOrganization does)
- *   workbench()->isOwner()               the organization's owners (and admins) — roles are owner and user
+ *   workbench()->isOwner()               the organization's owners (and Super Admins in Admin Mode) — roles are owner and user
+ *   workbench()->isAdmin()               a Super Admin with Admin Mode on here (off at every sign-in; the user menu switches it)
  *   workbench()->hasPersona('Lifeguard')   personas drive what people can do
  *   workbench()->inUnit('North')         units drive what they can see
  *   workbench()->unitScopeIds() / canSeeUnit()   their units and the units below them
@@ -31,6 +32,9 @@ use Illuminate\Support\Facades\Log;
 class Workbench
 {
     public const SESSION_KEY = 'workbench';
+
+    /** Session flag: the Super Admin turned Admin Mode on in this app (never kept from the account app: every sign-in starts off) */
+    public const ADMIN_MODE_KEY = 'workbench_admin_mode';
 
     public const WORKFORCE = ['employee', 'contractor'];
 
@@ -114,6 +118,7 @@ class Workbench
     public function forget(): void
     {
         $this->session->forget(self::SESSION_KEY);
+        $this->session->forget(self::ADMIN_MODE_KEY);
     }
 
     /** Whether there's a context (a signed-in request that came through SSO) */
@@ -170,12 +175,13 @@ class Workbench
     }
 
     /**
-     * A Super Admin viewing the portal as its owner, opened from the account app's Admin → Portals: they're treated as that
-     * owner's owner (role, permissions, organization), and the Admin Mode bar shows (resources/views/workbench/portal-admin-banner)
+     * A Super Admin viewing the portal as its owner, opened from the account app's Admin → Portals: like an impersonation, not
+     * Admin Mode — they're treated as that owner's owner (role, permissions, organization) and a bar says so, with a way out
+     * (resources/views/workbench/mode-banners). Admin Mode stays a separate switch in the user menu.
      */
-    public function portalAdminMode(): bool
+    public function portalAsOwner(): bool
     {
-        return (bool) ($this->portal()['admin_mode'] ?? false);
+        return (bool) ($this->portal()['as_owner'] ?? false);
     }
 
     /** 'owner' or 'customer' — what the organization is to the portal — or null */
@@ -254,9 +260,36 @@ class Workbench
         return $role === null ? null : (['owner' => 'Owner', 'user' => 'Member'][$role] ?? ucfirst($role));
     }
 
+    /**
+     * Whether they're a Super Admin acting as one right now: eligible (the account app says is_admin) AND in Admin Mode here.
+     * Eligibility alone never makes them an admin in this app — as in the account app, they're an ordinary member of their
+     * organization until they turn Admin Mode on from the user menu (every sign-in starts with it off, and each app keeps its own).
+     * Use this for "can do anything"; isAdminEligible() only for whether to offer the switch.
+     */
     public function isAdmin(): bool
     {
+        return $this->isAdminEligible() && $this->adminMode();
+    }
+
+    /** They're a Super Admin in the account app, so they may turn Admin Mode on here (the user menu offers it) */
+    public function isAdminEligible(): bool
+    {
         return (bool) $this->get('is_admin', false);
+    }
+
+    /** Admin Mode is on in this session (only meaningful for someone eligible — isAdmin() checks both) */
+    public function adminMode(): bool
+    {
+        return (bool) $this->session->get(self::ADMIN_MODE_KEY, false);
+    }
+
+    /** Turn Admin Mode on or off; only for someone eligible (returns whether it's on now) */
+    public function setAdminMode(bool $on): bool
+    {
+        $on = $on && $this->isAdminEligible();
+        $on ? $this->session->put(self::ADMIN_MODE_KEY, true) : $this->session->forget(self::ADMIN_MODE_KEY);
+
+        return $on;
     }
 
     public function isOwner(): bool
