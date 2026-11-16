@@ -266,6 +266,14 @@ infrastructure (hard-abend error tracking, the Feature API key check) used acros
   `workbench()->workbenchUrl()` (the SSO URL), never `shared-ui.portal_url` — an app may repoint that for a section of its own, so a
   portal's module can't hijack the way back to the workbench.
 
+- **App groups (a package's home app)** — in the account app a package can name one app its home; the package's other apps lose their
+  home-page tile and are reached through it. `/api/user`'s `app_group` (`workbench()->appGroup()`: `package`, `role` home|member, `home`,
+  `members`, each app `{id, key, name, url, icon_url}` — `url` signs in) tells each app. `workbench()->returnLink()` is the "← Return to …"
+  at the top of the menu, the phone drawer and the user menu: in a **member** app it's **Return to <home app>** (and the user menu keeps a
+  **Unique Workbench** link, `workbenchUrl()`); everywhere else it's Return to Workbench (`portal_url`, hidden in a portal). The **home**
+  app offers its members: `<x-package-apps />` (tiles, nothing elsewhere) or `...workbench()->groupMenuItems()` in a menu
+  (heading + one link per app); `isGroupHome()` / `isGroupMember()` / `groupHome()` / `appGroupMembers()`. Apps pick it up at sign-in.
+
 ## Rules
 - No app-*specific* logic here — logic must be generic enough to apply to every
   consuming app (not "how account.uniqueworkbench.com handles X")

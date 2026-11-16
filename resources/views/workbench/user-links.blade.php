@@ -36,10 +36,23 @@
     </form>
 @endif
 
-@if (config('shared-ui.portal_url') && ! config('shared-ui.portal') && $style === 'dropdown')
-    <x-dropdown-link :href="config('shared-ui.portal_url')">
-        <i class="fa-solid fa-arrow-left w-4 mr-2 text-center"></i>{{ __('Return to Workbench') }}
+@php $return = workbench()->returnLink(); @endphp
+@if ($return && $style === 'dropdown')
+    <x-dropdown-link :href="$return['url']">
+        <i class="fa-solid fa-arrow-left w-4 mr-2 text-center"></i>{{ $return['label'] }}
     </x-dropdown-link>
+@endif
+{{-- In one of a group's other apps the way back is its home app (above); the Workbench itself stays a click away here --}}
+@if (workbench()->isGroupMember())
+    @if ($style === 'dropdown')
+        <x-dropdown-link :href="workbench()->workbenchUrl()">
+            <i class="fa-solid fa-table-cells-large w-4 mr-2 text-center"></i>{{ __('Unique Workbench') }}
+        </x-dropdown-link>
+    @else
+        <a href="{{ workbench()->workbenchUrl() }}" class="flex items-center gap-3 px-3 py-2 rounded-md text-[0.8rem] font-medium text-zinc-200 hover:bg-white/5 hover:text-white">
+            <i class="fa-solid fa-table-cells-large w-4 text-center text-[0.9rem]"></i>{{ __('Unique Workbench') }}
+        </a>
+    @endif
 @endif
 
 <form method="POST" action="{{ route('logout') }}">

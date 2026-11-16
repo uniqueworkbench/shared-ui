@@ -91,6 +91,9 @@ class Workbench
             // When this app is a portal (or lives in one): what the organization is to it — role owner|customer, its owners,
             // its look (branding) and its apps; null for an ordinary app or from older account apps
             'portal' => is_array($ssoUser['portal'] ?? null) ? $ssoUser['portal'] : null,
+            // When this app is in a package with a home app: the package, the home app, this app's `role` (home|member) and the
+            // group's other apps this person may use; null for an app in no group or from older account apps (appGroup())
+            'app_group' => is_array($ssoUser['app_group'] ?? null) ? $ssoUser['app_group'] : null,
             // This app's brand, uploaded in the account app (absolute URLs; null = this app's own files)
             'app_branding' => array_map(
                 fn ($url) => is_string($url) && $url !== '' ? $url : null,
@@ -151,6 +154,74 @@ class Workbench
     public function organizationName(): ?string
     {
         return $this->get('organization_name');
+    }
+
+    /**
+     * The group of apps this app is in (a package with a home app, in the account app): ['package' => [id, name],
+     * 'role' => 'home'|'member', 'home' => app, 'members' => [app, …]] where an app is [id, key, name, url, icon_url] and `url`
+     * signs in to it. The group's other apps are hidden from the Workbench home page: the home app offers them and
+     * they lead back to it. Null for an app in no group.
+     */
+    public function appGroup(): ?array
+    {
+        return $this->get('app_group');
+    }
+
+    /** This app is the home app of its group — it offers the group's other apps (appGroupMembers()) */
+    public function isGroupHome(): bool
+    {
+        return ($this->appGroup()['role'] ?? null) === 'home';
+    }
+
+    /** This app is one of a group's other apps: its way back goes to the home app, not the Workbench (returnLink()) */
+    public function isGroupMember(): bool
+    {
+        return ($this->appGroup()['role'] ?? null) === 'member' && ! empty($this->appGroup()['home']['url']);
+    }
+
+    /** The group's home app, [id, key, name, url, icon_url], or null */
+    public function groupHome(): ?array
+    {
+        return $this->appGroup()['home'] ?? null;
+    }
+
+    /** The group's other apps this person may use (not this one), each [id, key, name, url, icon_url] */
+    public function appGroupMembers(): array
+    {
+        return array_values($this->appGroup()['members'] ?? []);
+    }
+
+    /**
+     * The menu items for the group's other apps (a `heading`, then a link per app with its icon), to place in the app's
+     * navigation — e.g. `...workbench()->groupMenuItems()` in the home app's config. Empty when there are none.
+     */
+    public function groupMenuItems(?string $heading = null): array
+    {
+        $members = $this->isGroupHome() ? $this->appGroupMembers() : [];
+        if (! $members) {
+            return [];
+        }
+
+        return [
+            ['heading' => $heading ?? ($this->appGroup()['package']['name'] ?? __('Apps'))],
+            ...array_map(fn (array $app) => ['label' => $app['name'], 'url' => $app['url'], 'icon' => 'fa-solid fa-cube', 'image' => $app['icon_url'] ?? null], $members),
+        ];
+    }
+
+    /**
+     * The "← Return to …" link at the top of the menu and in the user menu: ['label', 'url'] — the group's home app for an app
+     * in a group ("Return to Trigonon Dashboard"), else the Workbench (`shared-ui.portal_url`, which an app may repoint for a
+     * section of its own); null where there's none (a portal is its own place).
+     */
+    public function returnLink(): ?array
+    {
+        if ($this->isGroupMember()) {
+            return ['label' => __('Return to :app', ['app' => $this->groupHome()['name'] ?? __('home')]), 'url' => $this->groupHome()['url'], 'group' => true];
+        }
+
+        return config('shared-ui.portal_url') && ! config('shared-ui.portal')
+            ? ['label' => __('Return to Workbench'), 'url' => config('shared-ui.portal_url'), 'group' => false]
+            : null;
     }
 
     /** The portal this app is, or lives in, and what the organization is to it (the account app's `portal`), or null */

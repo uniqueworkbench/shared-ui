@@ -35,7 +35,7 @@
 
         @if ($nav)
             <nav class="flex-1 overflow-y-auto px-3 py-4 space-y-1">
-                @if (config('shared-ui.portal_url') && ! config('shared-ui.portal'))
+                @if (workbench()->returnLink())
                     <div class="pb-2 mb-2 border-b border-white/10">
                         @include('shared-ui::workbench.portal-link')
                     </div>
