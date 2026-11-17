@@ -306,6 +306,15 @@ class Workbench
         return $this->portal()['branding'] ?? [];
     }
 
+    /**
+     * The portal owner's company information for documents (quotes, orders…): name, street, street2, city, state, zip, country,
+     * phone, email, website, tax_id, footer — each null when unknown. For a customer it is the owner's whose portal this visit is.
+     */
+    public function portalCompany(): array
+    {
+        return $this->portal()['company'] ?? [];
+    }
+
     /** The user's picture from the account app, or null */
     public function avatarUrl(): ?string
     {

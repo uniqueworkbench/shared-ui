@@ -116,6 +116,7 @@ class SharedUiServiceProvider extends ServiceProvider
             $present = array_column($navigation, 'route');
             foreach ([
                 ['label' => 'Customers', 'route' => 'portal.customers', 'icon' => 'fa-solid fa-handshake', 'can' => Workbench::PORTAL_MANAGE_CUSTOMERS],
+                ['label' => 'Company Info', 'route' => 'portal.company', 'icon' => 'fa-solid fa-id-card', 'can' => Workbench::PORTAL_MANAGE_BRANDING],
                 ['label' => 'Branding', 'route' => 'portal.branding', 'icon' => 'fa-solid fa-palette', 'can' => Workbench::PORTAL_MANAGE_BRANDING],
             ] as $item) {
                 if (! in_array($item['route'], $present, true)) {
@@ -137,6 +138,8 @@ class SharedUiServiceProvider extends ServiceProvider
                             $router->delete('/customers/{organization}', [PortalController::class, 'removeCustomer'])->name('portal.customers.destroy');
                         });
                         $router->middleware('can:' . Workbench::PORTAL_MANAGE_BRANDING)->group(function ($router) {
+                            $router->get('/company', [PortalController::class, 'company'])->name('portal.company');
+                            $router->put('/company', [PortalController::class, 'saveCompany'])->name('portal.company.update');
                             $router->get('/branding', [PortalController::class, 'branding'])->name('portal.branding');
                             $router->put('/branding', [PortalController::class, 'saveBranding'])->name('portal.branding.update');
                         });

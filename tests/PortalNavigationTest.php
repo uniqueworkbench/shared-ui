@@ -16,6 +16,7 @@ class PortalNavigationTest extends TestCase
         $app['config']->set('shared-ui.navigation', [
             ['label' => 'Dashboard', 'route' => 'dashboard'],
             ['label' => 'Customers', 'route' => 'portal.customers', 'can' => 'portal-owner'],
+            ['label' => 'Company Info', 'route' => 'portal.company', 'can' => 'portal-owner'],
             ['label' => 'Branding', 'route' => 'portal.branding', 'can' => 'portal-owner'],
         ]);
     }
@@ -24,6 +25,6 @@ class PortalNavigationTest extends TestCase
     {
         $routes = array_column(config('shared-ui.navigation'), 'route');
 
-        $this->assertSame(['dashboard', 'portal.customers', 'portal.branding'], $routes);
+        $this->assertSame(['dashboard', 'portal.customers', 'portal.company', 'portal.branding'], $routes);
     }
 }

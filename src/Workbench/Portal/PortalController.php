@@ -94,6 +94,37 @@ class PortalController
         return $this->done($this->send($request, 'delete', "/api/portal/customers/{$organization}"), __('Customer removed.'));
     }
 
+    /** The company information (name, address, contacts, website…) the portal puts on its documents */
+    public function company(Request $request)
+    {
+        // Fresh from the account app, else what they signed in with
+        $response = $this->send($request, 'get', '/api/portal');
+
+        return view('shared-ui::portal.company', [
+            'company' => $response->successful() ? ($response->json('portal.company') ?: []) : workbench()->portalCompany(),
+        ]);
+    }
+
+    public function saveCompany(Request $request): RedirectResponse
+    {
+        $data = $request->validate([
+            'name' => ['nullable', 'string', 'max:255'], 'street' => ['nullable', 'string', 'max:255'], 'street2' => ['nullable', 'string', 'max:255'],
+            'city' => ['nullable', 'string', 'max:255'], 'state' => ['nullable', 'string', 'max:255'], 'zip' => ['nullable', 'string', 'max:30'],
+            'country' => ['nullable', 'string', 'max:255'], 'phone' => ['nullable', 'string', 'max:50'], 'email' => ['nullable', 'email', 'max:255'],
+            'website' => ['nullable', 'url', 'max:255'], 'tax_id' => ['nullable', 'string', 'max:255'], 'footer' => ['nullable', 'string', 'max:500'],
+        ]);
+        $response = $this->send($request, 'put', '/api/portal/company', $data);
+
+        // Their own session's copy, so documents show it now rather than at next sign-in
+        if ($response->successful()) {
+            $context = workbench()->all();
+            $context['portal']['company'] = $response->json('company');
+            workbench()->set($context);
+        }
+
+        return $this->done($response, __('Company information saved.'));
+    }
+
     public function branding(Request $request)
     {
         // Fresh from the account app (its palettes to pick from, and the look as saved), else what they signed in with
