@@ -88,6 +88,28 @@ class PortalTest extends TestCase
         $this->assertStringContainsString("'lg:min-w-[15rem] lg:whitespace-nowrap' => config('shared-ui.portal')", $bar);
     }
 
+    public function test_a_portals_picture_keeps_its_shape_instead_of_being_cropped_to_a_square(): void
+    {
+        config(['shared-ui.portal' => true]);
+        $this->actingAs(new class extends \Illuminate\Foundation\Auth\User {
+            public $id = 1;
+            public $name = 'Pat';
+        });
+        $branding = ['title' => 'Hydra Pools', 'primary_color' => '#112233', 'icon_image_url' => 'https://cdn.test/hydra-wide.png'];
+        workbench()->set(Workbench::fromSsoUser([
+            'organization_id' => 5, 'organization_role' => 'owner',
+            'portal' => ['role' => 'owner', 'owner' => ['id' => 5, 'name' => 'Acme'], 'branding' => $branding],
+        ]));
+
+        $html = view('shared-ui::workbench.brand')->render();
+
+        $this->assertStringContainsString('hydra-wide.png', $html);
+        $this->assertStringContainsString('w-auto', $html);
+        $this->assertStringContainsString('object-contain', $html);
+        $this->assertStringNotContainsString('object-cover', $html);
+        $this->assertStringNotContainsString(' w-9 ', $html);
+    }
+
     public function test_the_portal_context_from_the_account_app_says_what_the_organization_is_to_it(): void
     {
         $context = Workbench::fromSsoUser([

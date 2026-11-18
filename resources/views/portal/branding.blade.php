@@ -3,7 +3,7 @@
     $icons = ['fa-building', 'fa-handshake', 'fa-store', 'fa-briefcase', 'fa-truck', 'fa-box', 'fa-wrench', 'fa-screwdriver-wrench', 'fa-hard-hat', 'fa-industry', 'fa-warehouse', 'fa-leaf', 'fa-heart', 'fa-star', 'fa-bolt', 'fa-shield-halved', 'fa-graduation-cap', 'fa-stethoscope', 'fa-utensils', 'fa-car', 'fa-house', 'fa-globe', 'fa-chart-line', 'fa-users'];
     // Each icon, and the picture that can be uploaded in its place
     $iconFields = [
-        'icon' => ['label' => __('Portal icon'), 'description' => __('Your own tile on the home page, and the top left corner inside the portal.'), 'image' => 'icon_image'],
+        'icon' => ['label' => __('Portal icon'), 'description' => __('Your own tile on the home page, and the top left corner inside the portal. A wide picture, like your logo with its name, fits there in full.'), 'image' => 'icon_image'],
         'customer_icon' => ['label' => __('Icon customers see on their Partner Portals tile'), 'description' => __('Shown to your customers on their Partner Portals tile.'), 'image' => 'customer_icon_image'],
     ];
 @endphp

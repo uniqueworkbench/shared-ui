@@ -19,9 +19,10 @@
 @endphp
 <a href="{{ \Illuminate\Support\Facades\Route::has('dashboard') ? route('dashboard') : url('/') }}" class="flex items-center gap-2 min-w-0 text-white">
     @if ($portalBrand)
-        <span class="inline-flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-md bg-white" @if (empty($portalBrand['icon_image_url'])) style="color: {{ $portalBrand['primary_color'] ?? '#2563eb' }}" @endif>
+        {{-- A picture keeps its own shape (square, or a wide logo with its name) at the bar's height; the icon stays a square tile --}}
+        <span class="inline-flex h-9 shrink-0 items-center justify-center overflow-hidden rounded-md bg-white @if (empty($portalBrand['icon_image_url'])) w-9 @endif" @if (empty($portalBrand['icon_image_url'])) style="color: {{ $portalBrand['primary_color'] ?? '#2563eb' }}" @endif>
             @if (! empty($portalBrand['icon_image_url']))
-                <img src="{{ $portalBrand['icon_image_url'] }}" alt="" class="h-full w-full object-cover">
+                <img src="{{ $portalBrand['icon_image_url'] }}" alt="" class="h-full w-auto max-w-[11rem] object-contain" data-portal-icon-image>
             @else
                 <i class="fa-solid {{ $portalBrand['icon'] ?? 'fa-building' }}"></i>
             @endif
