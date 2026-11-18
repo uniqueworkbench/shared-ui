@@ -16,7 +16,7 @@
 
         <form method="POST" action="{{ route('portal.branding.update') }}" enctype="multipart/form-data" data-dirty-form class="space-y-6">
             @csrf @method('PUT')
-            <x-card :title="__('Title')" :description="__('Your portal name on your own tile and in the top left corner inside the portal. Leave it empty to use the portal\'s own name.')">
+            <x-card :title="__('Portal Tile Title')" :description="__('Your portal name on your own tile and in the top left corner inside the portal. Leave it empty to use the portal\'s own name.')">
                 <x-text-input id="title" name="title" type="text" maxlength="40" class="block w-full sm:max-w-md" :value="old('title', $brand['title'] ?? '')" />
                 <x-input-error :messages="$errors->get('title')" class="mt-2" />
             </x-card>
