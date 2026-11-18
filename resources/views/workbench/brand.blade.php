@@ -15,14 +15,16 @@
 @php
     // Inside a portal: the owner's own icon and title (their look, whoever is signed in), else the app's brand below
     $portalBrand = config('shared-ui.portal') && auth()->check() ? workbench()->portalBrand() : [];
+    // The wide logo at the top left; without one, the icon (its picture, else the glyph)
+    $portalLogo = $portalBrand['logo_image_url'] ?? ($portalBrand['icon_image_url'] ?? null);
     $portalTitle = $portalBrand ? (($portalBrand['title'] ?? null) ?: (workbench()->portal()['name'] ?? config('app.name'))) : null;
 @endphp
 <a href="{{ \Illuminate\Support\Facades\Route::has('dashboard') ? route('dashboard') : url('/') }}" class="flex items-center gap-2 min-w-0 text-white">
     @if ($portalBrand)
         {{-- A picture keeps its own shape (square, or a wide logo with its name) at the bar's height; the icon stays a square tile --}}
-        <span class="inline-flex h-9 shrink-0 items-center justify-center overflow-hidden rounded-md bg-white @if (empty($portalBrand['icon_image_url'])) w-9 @endif" @if (empty($portalBrand['icon_image_url'])) style="color: {{ $portalBrand['primary_color'] ?? '#2563eb' }}" @endif>
-            @if (! empty($portalBrand['icon_image_url']))
-                <img src="{{ $portalBrand['icon_image_url'] }}" alt="" class="h-full w-auto max-w-[11rem] object-contain" data-portal-icon-image>
+        <span class="inline-flex h-9 shrink-0 items-center justify-center overflow-hidden rounded-md bg-white @if (empty($portalLogo)) w-9 @endif" @if (empty($portalLogo)) style="color: {{ $portalBrand['primary_color'] ?? '#2563eb' }}" @endif>
+            @if (! empty($portalLogo))
+                <img src="{{ $portalLogo }}" alt="" class="h-full w-auto max-w-[11rem] object-contain" data-portal-icon-image>
             @else
                 <i class="fa-solid {{ $portalBrand['icon'] ?? 'fa-building' }}"></i>
             @endif

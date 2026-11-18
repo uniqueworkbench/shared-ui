@@ -95,7 +95,7 @@ class PortalTest extends TestCase
             public $id = 1;
             public $name = 'Pat';
         });
-        $branding = ['title' => 'Hydra Pools', 'primary_color' => '#112233', 'icon_image_url' => 'https://cdn.test/hydra-wide.png'];
+        $branding = ['title' => 'Hydra Pools', 'primary_color' => '#112233', 'logo_image_url' => 'https://cdn.test/hydra-wide.png'];
         workbench()->set(Workbench::fromSsoUser([
             'organization_id' => 5, 'organization_role' => 'owner',
             'portal' => ['role' => 'owner', 'owner' => ['id' => 5, 'name' => 'Acme'], 'branding' => $branding],

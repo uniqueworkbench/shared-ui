@@ -300,7 +300,7 @@ class Workbench
         return $this->portalRole() === 'customer';
     }
 
-    /** The portal's look: primary_color, secondary_color, accent_color, icon, customer_icon (defaults when none set) */
+    /** The portal's look: primary_color, secondary_color, accent_color, icon, and the pictures' icon_image_url, logo_image_url, favicon_image_url (defaults when none set) */
     public function portalBrand(): array
     {
         return $this->portal()['branding'] ?? [];

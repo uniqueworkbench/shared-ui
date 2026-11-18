@@ -1,10 +1,9 @@
-{{-- A portal's Branding screen ($brand: title, palette, icon, customer_icon, icon_image_url, customer_icon_image_url, favicon_image_url) --}}
+{{-- A portal's Branding screen ($brand: title, palette, icon, icon_image_url, logo_image_url, favicon_image_url, favicon_generated) --}}
 @php
     $icons = ['fa-building', 'fa-handshake', 'fa-store', 'fa-briefcase', 'fa-truck', 'fa-box', 'fa-wrench', 'fa-screwdriver-wrench', 'fa-hard-hat', 'fa-industry', 'fa-warehouse', 'fa-leaf', 'fa-heart', 'fa-star', 'fa-bolt', 'fa-shield-halved', 'fa-graduation-cap', 'fa-stethoscope', 'fa-utensils', 'fa-car', 'fa-house', 'fa-globe', 'fa-chart-line', 'fa-users'];
-    // Each icon, and the picture that can be uploaded in its place
+    // The one icon, and the picture that can be uploaded in its place
     $iconFields = [
-        'icon' => ['label' => __('Portal icon'), 'description' => __('Your own tile on the home page, and the top left corner inside the portal. A wide picture, like your logo with its name, fits there in full.'), 'image' => 'icon_image'],
-        'customer_icon' => ['label' => __('Icon customers see on their Partner Portals tile'), 'description' => __('Shown to your customers on their Partner Portals tile.'), 'image' => 'customer_icon_image'],
+        'icon' => ['label' => __('Portal icon'), 'description' => __('Your tile on the home page and your customers\' Partner Portals tile — one icon for both. It is also made into your favicon.'), 'image' => 'icon_image'],
     ];
 @endphp
 <x-workbench-layout :title="__('Branding')">
@@ -49,6 +48,27 @@
                 <x-input-error :messages="$errors->get('palette')" class="mt-2" />
             </x-card>
 
+            @php $logo = $brand['logo_image_url'] ?? null; @endphp
+            <x-card :title="__('Portal logo')" :description="__('The wide logo in the top left corner inside the portal, next to your title. Without one, your portal icon is shown there.')">
+                <div class="flex flex-wrap items-center gap-4">
+                    @if ($logo)
+                        <img src="{{ $logo }}" alt="" class="h-12 max-w-[14rem] rounded border border-zinc-200 bg-white object-contain p-1" data-current-image="logo_image">
+                    @endif
+                    <div class="min-w-0">
+                        <x-input-label for="logo_image" :value="$logo ? __('Replace the logo') : __('Upload a logo')" />
+                        <input id="logo_image" name="logo_image" type="file" accept="image/png,image/jpeg,image/gif,image/webp" class="mt-1 block text-sm text-zinc-600">
+                        <p class="mt-1 text-xs text-zinc-500">{{ __('A wide picture, like your logo with its name, fits in full. PNG, JPG, GIF or WebP, up to 2 MB.') }}</p>
+                        <x-input-error :messages="$errors->get('logo_image')" class="mt-1" />
+                    </div>
+                    @if ($logo)
+                        <label class="flex items-center gap-2 text-sm text-zinc-700">
+                            <input type="checkbox" name="remove_logo_image" value="1" class="rounded border-zinc-300 text-bt_primary-600 focus:ring-bt_primary-500">
+                            {{ __('Remove the logo') }}
+                        </label>
+                    @endif
+                </div>
+            </x-card>
+
             @foreach ($iconFields as $key => $field)
                 @php $imageKey = $field['image']; $current = $brand[$imageKey . '_url'] ?? null; @endphp
                 <x-card :title="$field['label']" :description="$field['description'] . ' ' . __('Choose an icon, or upload your own picture — a picture is used instead of the icon.')">
@@ -82,21 +102,21 @@
             @endforeach
 
             @php $favicon = $brand['favicon_image_url'] ?? null; @endphp
-            <x-card :title="__('Favicon')" :description="__('The small picture on the browser tab while people are in your portal. Without one, the portal\'s own is used.')">
+            <x-card :title="__('Favicon')" :description="__('The small picture on the browser tab while people are in your portal. It is made from your portal icon picture automatically; upload one here only if you want a different one.')">
                 <div class="flex flex-wrap items-center gap-4">
                     @if ($favicon)
                         <img src="{{ $favicon }}" alt="" class="h-10 w-10 rounded border border-zinc-200 object-contain bg-white p-1" data-current-image="favicon_image">
                     @endif
                     <div class="min-w-0">
-                        <x-input-label for="favicon_image" :value="$favicon ? __('Replace the favicon') : __('Upload a favicon')" />
+                        <x-input-label for="favicon_image" :value="$favicon && empty($brand['favicon_generated']) ? __('Replace the favicon') : __('Use a different favicon')" />
                         <input id="favicon_image" name="favicon_image" type="file" accept="image/png,image/jpeg,image/gif,image/webp" class="mt-1 block text-sm text-zinc-600">
-                        <p class="mt-1 text-xs text-zinc-500">{{ __('Square, at least 64 × 64 pixels works best. PNG, JPG, GIF or WebP, up to 2 MB.') }}</p>
+                        <p class="mt-1 text-xs text-zinc-500">@if (! empty($brand['favicon_generated'])){{ __('This one was made from your portal icon.') }} @endif{{ __('Square, at least 64 × 64 pixels works best. PNG, JPG, GIF or WebP, up to 2 MB.') }}</p>
                         <x-input-error :messages="$errors->get('favicon_image')" class="mt-1" />
                     </div>
-                    @if ($favicon)
+                    @if ($favicon && empty($brand['favicon_generated']))
                         <label class="flex items-center gap-2 text-sm text-zinc-700">
                             <input type="checkbox" name="remove_favicon_image" value="1" class="rounded border-zinc-300 text-bt_primary-600 focus:ring-bt_primary-500">
-                            {{ __('Remove the favicon') }}
+                            {{ __('Remove my favicon (use the one made from the icon)') }}
                         </label>
                     @endif
                 </div>
