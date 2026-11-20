@@ -22,11 +22,20 @@ use UniqueWorkbench\SharedUi\Workbench\ClientToken;
  */
 class WorkbenchMailTransport extends AbstractTransport
 {
+    /**
+     * A header a Mailable can set (`new Headers(text: [WorkbenchMailTransport::REPLY_TAG_HEADER => $token])`) to have replies
+     * to it delivered back to this app: the relay makes the reply-to `<inbox>+<this app's key>.<tag>@<reply domain>` and,
+     * when a reply arrives there, posts it to this app's `POST /api/features/inbound-mail` with the tag. Letters and digits.
+     * It isn't sent on as a header, and it replaces any reply-to set on the message.
+     */
+    public const REPLY_TAG_HEADER = 'X-Workbench-Reply-Tag';
+
     protected function doSend(SentMessage $message): void
     {
         $email = MessageConverter::toEmail($message->getOriginalMessage());
         $addresses = fn (array $list) => array_map(fn (Address $address) => $address->getAddress(), $list);
         $replyTo = $email->getReplyTo()[0] ?? null;
+        $replyTag = $email->getHeaders()->has(self::REPLY_TAG_HEADER) ? trim($email->getHeaders()->get(self::REPLY_TAG_HEADER)->getBodyAsString()) : null;
 
         $payload = array_filter([
             'to' => $addresses($email->getTo()),
@@ -35,6 +44,7 @@ class WorkbenchMailTransport extends AbstractTransport
             'from_name' => ($email->getFrom()[0] ?? null)?->getName() ?: null,
             'reply_to' => $replyTo?->getAddress(),
             'reply_to_name' => $replyTo?->getName() ?: null,
+            'reply_tag' => $replyTag ?: null,
             'subject' => (string) $email->getSubject(),
             'html' => $this->body($email->getHtmlBody()),
             'text' => $this->body($email->getTextBody()),

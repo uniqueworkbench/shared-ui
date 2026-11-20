@@ -188,7 +188,11 @@ infrastructure (hard-abend error tracking, the Feature API key check) used acros
   every email goes out through the account app's mail relay (`POST <sso.base_url>/api/mail`) with a client-credentials
   token (`Workbench\ClientToken`, scope `mail` when `SSO_SCOPES` is set), so apps hold no mail provider settings. Sends
   to/cc/bcc addresses (not names), the from name, reply-to, subject, HTML/text bodies and attachments (base64); the
-  account app sends from its own address. A refusal or outage throws `TransportException`.
+  account app sends from its own address. A refusal or outage throws `TransportException`. **Replies back to the app**: a
+  Mailable that sets the header `WorkbenchMailTransport::REPLY_TAG_HEADER` (`X-Workbench-Reply-Tag`, letters and digits — e.g.
+  a token naming what the email is about) is sent with `reply_tag`; the relay makes the reply-to `<inbox>+<app key>.<tag>@<reply
+  domain>` (Admin → Settings → Email → Replies) and, when a reply arrives, posts it to the app's
+  `POST /api/features/inbound-mail` (feature-api) with the tag. The app never touches Postmark.
 - `src/Workbench/ClientToken.php` — client-credentials tokens for the account app's server-to-server APIs (config/sso.php),
   cached per scope; `Directory` and the mail driver use it.
 - `src/Workbench/` — what client apps are built on (the template uses all of it;
