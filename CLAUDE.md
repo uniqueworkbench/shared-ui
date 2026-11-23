@@ -192,7 +192,7 @@ infrastructure (hard-abend error tracking, the Feature API key check) used acros
   Mailable that sets the header `WorkbenchMailTransport::REPLY_TAG_HEADER` (`X-Workbench-Reply-Tag`, letters and digits — e.g.
   a token naming what the email is about) is sent with `reply_tag`; the relay makes the reply-to `<inbox>+<app key>.<tag>@<reply
   domain>` (Admin → Settings → Email → Replies) and, when a reply arrives, posts it to the app's
-  `POST /api/features/inbound-mail` (feature-api) with the tag. The app never touches Postmark.
+  `POST /api/features/inbound-mail` (feature-api) with the tag. The app never touches Postmark. A Mailable may also set `WorkbenchMailTransport::FROM_ADDRESS_HEADER` (`X-Workbench-From-Address`) to send from another address; the relay accepts it only for an allowed domain.
 - `src/Workbench/ClientToken.php` — client-credentials tokens for the account app's server-to-server APIs (config/sso.php),
   cached per scope; `Directory` and the mail driver use it.
 - `src/Workbench/` — what client apps are built on (the template uses all of it;

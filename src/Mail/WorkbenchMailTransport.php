@@ -30,6 +30,13 @@ class WorkbenchMailTransport extends AbstractTransport
      */
     public const REPLY_TAG_HEADER = 'X-Workbench-Reply-Tag';
 
+    /**
+     * A header a Mailable can set to send from another address than the account app's default: the relay uses it only when its
+     * domain is one the account app allows (Admin → Settings → Email → From domains), else it refuses the email. The message's
+     * own From address is never sent (apps' config always has one); only this header asks. The from *name* is still the message's.
+     */
+    public const FROM_ADDRESS_HEADER = 'X-Workbench-From-Address';
+
     protected function doSend(SentMessage $message): void
     {
         $email = MessageConverter::toEmail($message->getOriginalMessage());
@@ -37,7 +44,10 @@ class WorkbenchMailTransport extends AbstractTransport
         $replyTo = $email->getReplyTo()[0] ?? null;
         $replyTag = $email->getHeaders()->has(self::REPLY_TAG_HEADER) ? trim($email->getHeaders()->get(self::REPLY_TAG_HEADER)->getBodyAsString()) : null;
 
+        $fromAddress = $email->getHeaders()->has(self::FROM_ADDRESS_HEADER) ? trim($email->getHeaders()->get(self::FROM_ADDRESS_HEADER)->getBodyAsString()) : null;
+
         $payload = array_filter([
+            'from_address' => $fromAddress ?: null,
             'to' => $addresses($email->getTo()),
             'cc' => $addresses($email->getCc()),
             'bcc' => $addresses($email->getBcc()),

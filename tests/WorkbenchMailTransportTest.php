@@ -57,6 +57,30 @@ class WorkbenchMailTransportTest extends TestCase
             && $request['reply_tag'] === 'abc123' && $request['to'] === ['quoter@example.com']);
     }
 
+    public function test_a_from_address_header_goes_to_the_relay_as_from_address(): void
+    {
+        $this->fakeRelay();
+
+        Mail::to('quoter@example.com')->send(new class extends Mailable {
+            public function envelope(): Envelope
+            {
+                return new Envelope(subject: 'Hello');
+            }
+
+            public function content(): Content
+            {
+                return new Content(htmlString: '<p>Hi</p>');
+            }
+
+            public function headers(): Headers
+            {
+                return new Headers(text: [WorkbenchMailTransport::FROM_ADDRESS_HEADER => 'quotes@example.org']);
+            }
+        });
+
+        Http::assertSent(fn ($request) => str_ends_with($request->url(), '/api/mail') && ($request['from_address'] ?? null) === 'quotes@example.org');
+    }
+
     public function test_without_the_header_no_reply_tag_is_sent(): void
     {
         $this->fakeRelay();
